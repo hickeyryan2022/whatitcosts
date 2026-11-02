@@ -51,7 +51,7 @@
     margin-bottom: 16px;
   }
   label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
-  input {
+  input[type="number"] {
     width: 100%;
     font: inherit;
     font-size: 20px;
@@ -64,15 +64,28 @@
     -moz-appearance: textfield;
   }
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input:focus { border-color: var(--accent); }
-  .field + .row, .row + .field { margin-top: 16px; }
+  input[type="number"]:focus { border-color: var(--accent); }
+  .field + .row, .row + .field, .mode + .field { margin-top: 16px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mode {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+    padding: 4px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border);
+  }
+  .mode input { position: absolute; opacity: 0; pointer-events: none; }
+  .mode label {
+    margin: 0; padding: 10px 8px; border-radius: 9px; text-align: center;
+    font-size: 15px; line-height: 1.25; cursor: pointer; color: var(--muted);
+  }
+  .mode input:checked + label { background: var(--accent); color: #fff; }
+  .mode input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
   h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 8px; }
   .big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 6px; }
   .big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
   .line { margin: 0; font-size: 17px; }
+  .line + .line { margin-top: 8px; }
   .fine { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
-  .bar { display: flex; height: 28px; border-radius: 8px; overflow: hidden; margin: 8px 0 14px; }
+  .warn { margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--accent); }
+  .bar { display: flex; height: 28px; border-radius: 8px; overflow: hidden; margin: 16px 0 14px; background: var(--border); }
   .bar div { height: 100%; }
   .gifts { background: var(--accent); }
   .food { background: var(--ink); }
@@ -81,6 +94,8 @@
   .legend li { display: flex; align-items: center; gap: 8px; font-size: 16px; }
   .legend .sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
   .legend .amt { margin-left: auto; font-weight: 700; }
+  .tips { margin: 0; padding-left: 20px; }
+  .tips li { margin: 6px 0; }
   .locked { position: relative; overflow: hidden; }
   .blur { filter: blur(5px); user-select: none; pointer-events: none; color: var(--muted); margin: 0; }
   .blur li { margin: 4px 0; }
@@ -119,9 +134,19 @@
     <p class="sub">Put in your budget and see how it compares with the average Irish household, and what to save each week.</p>
 
     <section class="card">
-      <div class="field">
+      <div class="mode" role="radiogroup" aria-label="How do you want to plan?">
+        <input type="radio" name="mode" id="modeBudget" value="budget" checked>
+        <label for="modeBudget">I know my budget</label>
+        <input type="radio" name="mode" id="modeWeekly" value="weekly">
+        <label for="modeWeekly">Start from what I can save</label>
+      </div>
+      <div class="field" id="budgetField">
         <label for="budget">Your Christmas budget (total, in €)</label>
         <input id="budget" type="number" inputmode="decimal" min="0" step="any" placeholder="1200">
+      </div>
+      <div class="field" id="weeklyField" hidden>
+        <label for="weekly">How much can you set aside each week? (€)</label>
+        <input id="weekly" type="number" inputmode="decimal" min="0" step="any" placeholder="50">
       </div>
       <div class="row">
         <div>
@@ -136,14 +161,21 @@
     </section>
 
     <div id="results" hidden aria-live="polite">
+      <section class="card" id="projCard" hidden>
+        <h2>Your Christmas budget</h2>
+        <p class="big" id="projBig"></p>
+        <p class="line" id="projLine"></p>
+      </section>
+
       <section class="card">
         <h2>Versus the average</h2>
         <p class="big" id="vsBig"></p>
         <p class="line" id="vsLine"></p>
+        <p class="line">The average is just a survey figure. A smaller budget can still make a good Christmas.</p>
         <p class="fine">Average: €1,600 per household, Retail Ireland (Ibec) forecast for Christmas 2025. Survey figure, not a rule.</p>
       </section>
 
-      <section class="card">
+      <section class="card" id="weekCard">
         <h2>Save each week</h2>
         <p class="big" id="weekBig"></p>
         <p class="line" id="weekLine"></p>
@@ -151,18 +183,41 @@
 
       <section class="card">
         <h2>A starting split</h2>
+        <div class="row">
+          <div>
+            <label for="pctGifts">Gifts (%)</label>
+            <input id="pctGifts" type="number" inputmode="numeric" min="0" max="100" step="1" value="45">
+          </div>
+          <div>
+            <label for="pctFood">Food &amp; drink (%)</label>
+            <input id="pctFood" type="number" inputmode="numeric" min="0" max="100" step="1" value="40">
+          </div>
+        </div>
+        <p class="warn" id="splitWarn" hidden>These add up to more than 100%</p>
         <div class="bar" aria-hidden="true">
-          <div class="gifts" style="width:50%"></div>
-          <div class="food" style="width:35%"></div>
-          <div class="extras" style="width:15%"></div>
+          <div class="gifts" id="barGifts"></div>
+          <div class="food" id="barFood"></div>
+          <div class="extras" id="barExtras"></div>
         </div>
         <ul class="legend">
-          <li><span class="sw gifts"></span>Gifts (50%)<span class="amt" id="amtGifts"></span></li>
-          <li><span class="sw food"></span>Food &amp; drink (35%)<span class="amt" id="amtFood"></span></li>
-          <li><span class="sw extras"></span>Extras (15%)<span class="amt" id="amtExtras"></span></li>
+          <li><span class="sw gifts"></span>Gifts (<span id="lblGifts"></span>%)<span class="amt" id="amtGifts"></span></li>
+          <li><span class="sw food"></span>Food &amp; drink (<span id="lblFood"></span>%)<span class="amt" id="amtFood"></span></li>
+          <li><span class="sw extras"></span>Extras (<span id="lblExtras"></span>%)<span class="amt" id="amtExtras"></span></li>
         </ul>
         <p class="line" id="perPerson" style="margin-top:14px" hidden></p>
-        <p class="fine">This 50 / 35 / 15 split is our own rule of thumb to start from. It is not an official or surveyed figure, so change it to suit you.</p>
+        <p class="fine">This 45 / 40 / 15 split is our own rule of thumb, not an official or surveyed figure. Change it to fit your household.</p>
+      </section>
+
+      <section class="card">
+        <h2>Ways to keep it down</h2>
+        <ul class="tips">
+          <li>Write the budget down before you shop and stick to it.</li>
+          <li>Set a per-person limit for gifts, and agree it with family.</li>
+          <li>Try Secret Santa for extended family or friends.</li>
+          <li>Plan the food shop and check what you already have.</li>
+          <li>Avoid putting Christmas on credit if you can.</li>
+        </ul>
+        <p class="fine">Struggling? MABS offers free, confidential money advice: <a href="https://www.mabs.ie" rel="noopener">mabs.ie</a></p>
       </section>
 
       <section class="card locked">
@@ -191,7 +246,8 @@
 (function () {
   var AVERAGE = 1600;
   var $ = function (id) { return document.getElementById(id); };
-  var budgetEl = $('budget'), peopleEl = $('people'), savedEl = $('saved');
+  var budgetEl = $('budget'), weeklyEl = $('weekly'), peopleEl = $('people'), savedEl = $('saved');
+  var giftsEl = $('pctGifts'), foodEl = $('pctFood'), modeWeeklyEl = $('modeWeekly');
 
   function eur(n) {
     return '€' + Math.round(n).toLocaleString('en-IE');
@@ -213,12 +269,28 @@
   }
 
   function update() {
-    var budget = num(budgetEl);
+    var weeklyMode = modeWeeklyEl.checked;
     var people = Math.floor(num(peopleEl));
     var saved = num(savedEl);
+    var weeks = daysToChristmas() / 7;
+
+    $('budgetField').hidden = weeklyMode;
+    $('weeklyField').hidden = !weeklyMode;
+    $('projCard').hidden = !weeklyMode;
+    $('weekCard').hidden = weeklyMode;
+
+    var budget = weeklyMode ? num(weeklyEl) * weeks + saved : num(budgetEl);
 
     $('results').hidden = !(budget > 0);
     if (!(budget > 0)) return;
+
+    // Projected budget (afford-first mode)
+    if (weeklyMode) {
+      $('projBig').textContent = eur(budget);
+      $('projLine').textContent = weeks < 1
+        ? "Christmas is almost here, so plan around what you have now."
+        : "By 25 December you'd have about " + eur(budget) + ', saving ' + eur(num(weeklyEl)) + ' a week for about ' + weeks.toFixed(1) + ' weeks.';
+    }
 
     // a) Versus the average
     var d = Math.round((budget - AVERAGE) / AVERAGE * 100);
@@ -234,25 +306,36 @@
     }
 
     // b) Save each week
-    var weeks = daysToChristmas() / 7;
-    var left = Math.max(0, budget - saved);
-    if (left === 0) {
-      $('weekBig').textContent = 'Sorted';
-      $('weekLine').textContent = "You've already saved your full budget.";
-    } else if (weeks < 1) {
-      $('weekBig').textContent = eur(left);
-      $('weekLine').textContent = "Christmas is almost here, so that's the whole amount still to find.";
-    } else {
-      $('weekBig').innerHTML = '';
-      $('weekBig').append(eur(left / weeks), Object.assign(document.createElement('small'), { textContent: ' a week' }));
-      $('weekLine').textContent = eur(left) + ' still to save over about ' + weeks.toFixed(1) + ' weeks to 25 December.';
+    if (!weeklyMode) {
+      var left = Math.max(0, budget - saved);
+      if (left === 0) {
+        $('weekBig').textContent = 'Sorted';
+        $('weekLine').textContent = "You've already saved your full budget.";
+      } else if (weeks < 1) {
+        $('weekBig').textContent = eur(left);
+        $('weekLine').textContent = "Christmas is almost here, so that's the whole amount still to find.";
+      } else {
+        $('weekBig').innerHTML = '';
+        $('weekBig').append(eur(left / weeks), Object.assign(document.createElement('small'), { textContent: ' a week' }));
+        $('weekLine').textContent = eur(left) + ' still to save over about ' + weeks.toFixed(1) + ' weeks to 25 December.';
+      }
     }
 
-    // c) Starting split
-    var gifts = budget * 0.5;
+    // c) Editable split; extras is whatever is left, never below 0
+    var g = num(giftsEl), f = num(foodEl);
+    var x = Math.max(0, 100 - g - f);
+    var scale = Math.max(100, g + f);
+    $('splitWarn').hidden = g + f <= 100;
+    $('barGifts').style.width = (g / scale * 100) + '%';
+    $('barFood').style.width = (f / scale * 100) + '%';
+    $('barExtras').style.width = (x / scale * 100) + '%';
+    $('lblGifts').textContent = g;
+    $('lblFood').textContent = f;
+    $('lblExtras').textContent = x;
+    var gifts = budget * g / 100;
     $('amtGifts').textContent = eur(gifts);
-    $('amtFood').textContent = eur(budget * 0.35);
-    $('amtExtras').textContent = eur(budget * 0.15);
+    $('amtFood').textContent = eur(budget * f / 100);
+    $('amtExtras').textContent = eur(budget * x / 100);
     var pp = $('perPerson');
     if (people > 0) {
       pp.textContent = "That's about " + eur(gifts / people) + ' per person on gifts.';
@@ -262,9 +345,11 @@
     }
   }
 
-  [budgetEl, peopleEl, savedEl].forEach(function (el) {
+  [budgetEl, weeklyEl, peopleEl, savedEl, giftsEl, foodEl].forEach(function (el) {
     el.addEventListener('input', update);
   });
+  $('modeBudget').addEventListener('change', update);
+  modeWeeklyEl.addEventListener('change', update);
   update();
 })();
 </script>
