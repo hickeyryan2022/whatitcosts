@@ -142,11 +142,10 @@
   .btn.small { font-size: 14px; padding: 8px 14px; border-color: var(--border); color: var(--muted); }
   .btn.wide { display: block; width: 100%; }
   .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  button[disabled] {
-    font: inherit; font-weight: 700; font-size: 16px;
-    padding: 12px 22px; border-radius: 999px; border: 0;
-    background: var(--border); color: var(--muted); cursor: not-allowed;
-  }
+  .success { border: 2px solid var(--accent-fill); }
+  .success p { margin: 0 0 12px; font-size: 17px; }
+  .success .copy-msg { margin: 8px 0 0; }
+  .code-show { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 20px; letter-spacing: 0.06em; overflow-wrap: anywhere; user-select: all; }
   .buy-note { margin: 0; font-size: 13px; color: var(--muted); text-align: left; }
   footer { color: var(--muted); font-size: 14px; margin-top: 24px; }
   footer p { margin: 0 0 10px; }
@@ -341,34 +340,38 @@
         </ul>
         <p class="fine">Struggling? MABS offers free, confidential money advice: <a href="https://www.mabs.ie" rel="noopener noreferrer">mabs.ie</a></p>
       </section>
-
-      <section class="card locked" id="lockCard">
-        <ul class="blur" aria-hidden="true">
-          <li>Gift amounts for each person that add up to your budget</li>
-          <li>A payday-by-payday saving plan with dates</li>
-          <li>A tighter Plan B if money is short</li>
-          <li>One plan to share or screenshot. Nothing is saved.</li>
-        </ul>
-        <div class="lock-over">
-          <h3 id="lockTitle">Full planner, €3, coming soon</h3>
-          <button type="button" id="soonBtn" disabled>Coming soon</button>
-          <div class="buy" id="buyWrap" hidden>
-            <a class="btn primary" id="buyLink" target="_blank" rel="noopener noreferrer">Get the full planner, €3</a>
-            <p class="buy-note">€3, one payment, no subscription. No VAT charged. Instant access with a code. You can cancel within 14 days, but the right ends once you have access, which you ask for by paying. See our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
-            <form class="code-form" id="unlockForm">
-              <label for="code">Already paid? Enter your code</label>
-              <div class="code-row">
-                <input id="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
-                <button type="submit" class="btn">Unlock</button>
-              </div>
-              <p class="warn" id="codeErr" hidden>That code doesn't match. Check your payment confirmation.</p>
-            </form>
-          </div>
-        </div>
-      </section>
     </div>
 
+    <section class="card locked" id="lockCard">
+      <ul class="blur" aria-hidden="true">
+        <li>Gift amounts for each person that add up to your budget</li>
+        <li>A payday-by-payday saving plan with dates</li>
+        <li>A tighter Plan B if money is short</li>
+        <li>One plan to share or screenshot. Nothing is saved.</li>
+      </ul>
+      <div class="lock-over">
+        <h3 id="lockTitle">Full planner, €3. One payment, yours for this Christmas.</h3>
+        <div class="buy" id="buyWrap">
+          <a class="btn primary" id="buyLink" href="https://buy.stripe.com/6oUfZb5HKet3a7D7UU0Ba01" target="_blank" rel="noopener noreferrer">Get the full planner, €3</a>
+          <p class="buy-note">€3, one payment, no subscription. No VAT charged. Instant access with a code. You can cancel within 14 days, but the right ends once you have access, which you ask for by paying. See our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+          <form class="code-form" id="unlockForm">
+            <label for="code">Already paid? Enter your code</label>
+            <div class="code-row">
+              <input id="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+              <button type="submit" class="btn">Unlock</button>
+            </div>
+            <p class="warn" id="codeErr" hidden>That code doesn't match. Check your payment confirmation.</p>
+          </form>
+        </div>
+      </div>
+    </section>
+
     <section class="builder" id="paid" hidden aria-labelledby="builderTitle">
+      <div class="card success" id="unlockedCard" role="status" hidden>
+        <p>You're in. Your unlock code is <strong class="code-show" id="unlockedCode"></strong>. Save it: you'll need it to unlock on another phone or computer.</p>
+        <button type="button" class="btn" id="copyCodeBtn">Copy code</button>
+        <p class="copy-msg" id="copyCodeMsg" aria-live="polite"></p>
+      </div>
       <h2 class="builder-title" id="builderTitle">Christmas Plan Builder</h2>
       <p class="sub">Answer a few questions once and get one complete plan. Nothing is kept after you leave the page.</p>
 
@@ -446,7 +449,7 @@
 
 <script>
 (function () {
-  const PAY_URL = "";
+  const PAY_URL = "https://buy.stripe.com/6oUfZb5HKet3a7D7UU0Ba01";
   const CODE_HASH = "8b8f1969cd4303004e1bf98bf2b61636021b37a71b46f7a2d4eb7bfbea71f2cb";
 
   var AVERAGE = 1600;
@@ -823,8 +826,6 @@
     var live = !!PAY_URL;
     $('lockCard').hidden = unlocked;
     $('paid').hidden = !unlocked;
-    $('lockTitle').textContent = live ? 'Full planner, €3. One payment, yours for this Christmas.' : 'Full planner, €3, coming soon';
-    $('soonBtn').hidden = live;
     $('buyWrap').hidden = !live;
     if (live) $('buyLink').href = PAY_URL;
   }
@@ -906,23 +907,64 @@
     render();
   }
 
+  function codeMatches(code) {
+    if (!CODE_HASH || !code || !window.crypto || !crypto.subtle) return Promise.resolve(false);
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(code)).then(function (buf) {
+      var hex = Array.prototype.map.call(new Uint8Array(buf), function (n) { return n.toString(16).padStart(2, '0'); }).join('');
+      return hex === CODE_HASH.toLowerCase();
+    });
+  }
+
+  function unlock() {
+    unlocked = true;
+    $('codeErr').hidden = true;
+    renderLock();
+    update();
+  }
+
   $('unlockForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    var code = $('code').value.trim().toUpperCase();
-    var err = $('codeErr');
-    if (!CODE_HASH || !code || !window.crypto || !crypto.subtle) { err.hidden = false; return; }
-    crypto.subtle.digest('SHA-256', new TextEncoder().encode(code)).then(function (buf) {
-      var hex = Array.prototype.map.call(new Uint8Array(buf), function (n) { return n.toString(16).padStart(2, '0'); }).join('');
-      if (hex === CODE_HASH.toLowerCase()) {
-        unlocked = true;
-        err.hidden = true;
-        renderLock();
-        update();
-      } else {
-        err.hidden = false;
-      }
+    codeMatches($('code').value.trim().toUpperCase()).then(function (ok) {
+      if (ok) unlock();
+      else $('codeErr').hidden = false;
     });
   });
+
+  $('copyCodeBtn').addEventListener('click', function () {
+    var code = $('unlockedCode').textContent;
+    var selectIt = function () {
+      var range = document.createRange();
+      range.selectNodeContents($('unlockedCode'));
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      $('copyCodeMsg').textContent = 'Code selected. Copy it from here.';
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function () { $('copyCodeMsg').textContent = 'Copied'; }, selectIt);
+    } else {
+      selectIt();
+    }
+  });
+
+  var params = new URLSearchParams(location.search);
+  if (params.has('code')) {
+    var urlCode = (params.get('code') || '').trim().toUpperCase();
+    params.delete('code');
+    var rest = params.toString();
+    history.replaceState(null, '', location.pathname + (rest ? '?' + rest : '') + location.hash);
+    codeMatches(urlCode).then(function (ok) {
+      if (ok) {
+        unlock();
+        $('unlockedCode').textContent = urlCode;
+        $('unlockedCard').hidden = false;
+        $('paid').scrollIntoView({ block: 'start' });
+      } else {
+        $('codeErr').hidden = false;
+        $('lockCard').scrollIntoView({ block: 'start' });
+      }
+    });
+  }
 
   [budgetEl, weeklyEl, peopleEl, savedEl, giftsEl, foodEl].forEach(function (el) {
     el.addEventListener('input', update);
