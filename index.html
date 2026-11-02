@@ -2,10 +2,23 @@
 <html lang="en-IE">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Christmas Budget Planner Ireland | whatitcosts.ie</title>
 <meta name="description" content="Free Irish Christmas budget planner. See how your budget compares with the average household and what to save each week. Nothing you type is sent anywhere.">
-<meta name="theme-color" content="#fff6e9">
+<link rel="canonical" href="https://whatitcosts.onrender.com/">
+<meta name="theme-color" content="#fff6e9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140f" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="whatitcosts.ie">
+<meta property="og:title" content="Christmas Budget Planner Ireland | whatitcosts.ie">
+<meta property="og:description" content="Free Irish Christmas budget planner. See how your budget compares with the average household and what to save each week. Nothing you type is sent anywhere.">
+<meta property="og:url" content="https://whatitcosts.onrender.com/">
+<meta property="og:locale" content="en_IE">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Christmas Budget Planner Ireland | whatitcosts.ie">
+<meta name="twitter:description" content="Free Irish Christmas budget planner. See how your budget compares with the average household and what to save each week. Nothing you type is sent anywhere.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e8541e'/%3E%3Ctext x='50' y='70' font-family='Arial,sans-serif' font-weight='900' font-size='60' text-anchor='middle' fill='%23fff6e9'%3E%E2%82%AC%3C/text%3E%3C/svg%3E">
 <style>
   :root {
@@ -16,9 +29,12 @@
     --card: #ffffff;
     --border: #eadfce;
     --extras: #c9b99e;
+    --accent-ink: #b5400f;
+    --accent-fill: #c2470f;
   }
   @media (prefers-color-scheme: dark) {
     :root {
+      --accent-ink: #e8541e;
       --bg: #17140f;
       --ink: #f5ece0;
       --card: #221e17;
@@ -27,6 +43,9 @@
     }
   }
   * { box-sizing: border-box; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
   [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body {
@@ -75,10 +94,11 @@
   }
   .mode input { position: absolute; opacity: 0; pointer-events: none; }
   .mode label {
-    margin: 0; padding: 10px 8px; border-radius: 9px; text-align: center;
+    display: flex; align-items: center; justify-content: center; min-height: 44px;
+    margin: 0; padding: 8px; border-radius: 9px; text-align: center;
     font-size: 15px; line-height: 1.25; cursor: pointer; color: var(--muted);
   }
-  .mode input:checked + label { background: var(--accent); color: #fff; }
+  .mode input:checked + label { background: var(--accent-fill); color: #fff; }
   .mode input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
   h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 8px; }
   .big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 6px; }
@@ -86,7 +106,7 @@
   .line { margin: 0; font-size: 17px; }
   .line + .line { margin-top: 8px; }
   .fine { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
-  .warn { margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--accent); }
+  .warn { margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--accent-ink); }
   .bar { display: flex; height: 28px; border-radius: 8px; overflow: hidden; margin: 16px 0 14px; background: var(--border); }
   .bar div { height: 100%; }
   .gifts { background: var(--accent); }
@@ -100,7 +120,7 @@
   .tips li { margin: 6px 0; }
   .locked { position: relative; overflow: hidden; }
   .blur {
-    position: absolute; inset: 20px; opacity: 0.6;
+    position: absolute; inset: 20px;
     filter: blur(5px); user-select: none; pointer-events: none; color: var(--muted); margin: 0;
   }
   .blur li { margin: 4px 0; }
@@ -116,9 +136,9 @@
   .btn {
     display: inline-block; font: inherit; font-weight: 700; font-size: 16px; line-height: 1.25;
     min-height: 44px; padding: 10px 20px; border-radius: 999px; border: 2px solid var(--accent);
-    background: transparent; color: var(--accent); cursor: pointer; text-decoration: none; text-align: center;
+    background: transparent; color: var(--accent-ink); cursor: pointer; text-decoration: none; text-align: center;
   }
-  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.primary { background: var(--accent-fill); border-color: var(--accent-fill); color: #fff; }
   .btn.small { font-size: 14px; padding: 8px 14px; border-color: var(--border); color: var(--muted); }
   .btn.wide { display: block; width: 100%; }
   .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -127,11 +147,13 @@
     padding: 12px 22px; border-radius: 999px; border: 0;
     background: var(--border); color: var(--muted); cursor: not-allowed;
   }
+  .buy-note { margin: 0; font-size: 13px; color: var(--muted); text-align: left; }
   footer { color: var(--muted); font-size: 14px; margin-top: 24px; }
   footer p { margin: 0 0 10px; }
-  a { color: var(--accent); }
+  .footer-nav { display: flex; flex-wrap: wrap; gap: 0 20px; margin: 0 0 8px; }
+  .footer-nav a { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; }
+  a { color: var(--accent-ink); }
 
-  /* ---- Christmas Plan Builder ---- */
   .builder { margin-top: 32px; }
   .builder-title { font-size: 24px; letter-spacing: -0.01em; text-transform: none; color: var(--ink); margin: 0 0 6px; }
   .stack > * + * { margin-top: 18px; }
@@ -144,7 +166,7 @@
     min-height: 52px; font: inherit; font-weight: 700; font-size: 15px; line-height: 1.2; padding: 8px 6px;
     border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--ink); cursor: pointer;
   }
-  .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .choice[aria-pressed="true"] { border-color: var(--accent-fill); background: var(--accent-fill); color: #fff; }
   .person-row {
     display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; align-items: end;
     padding: 14px 0; border-top: 1px solid var(--border);
@@ -165,7 +187,7 @@
   .plan-head { display: flex; align-items: center; gap: 12px; }
   .plan-head svg { width: 48px; height: 48px; flex: none; }
   .plan-head h3 { margin: 0; font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; }
-  .plan-year { margin: 0; font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; }
+  .plan-year { margin: 0; font-size: 14px; font-weight: 700; color: var(--accent-ink); letter-spacing: 0.06em; }
   .plan-budget { margin: 16px 0 0; font-size: 17px; }
   .plan-budget strong { display: block; font-size: 40px; line-height: 1.1; color: var(--accent); letter-spacing: -0.02em; }
   .plan h4 {
@@ -186,10 +208,10 @@
   .sched .num { text-align: right; }
   .sched td.num:first-of-type { font-weight: 700; }
   .plan-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-  .copy-msg { margin: 8px 0 0; min-height: 1.5em; font-size: 15px; font-weight: 600; color: var(--accent); }
+  .copy-msg { margin: 8px 0 0; min-height: 1.5em; font-size: 15px; font-weight: 600; color: var(--accent-ink); }
 
   @media print {
-    :root { --bg: #fff; --ink: #000; --muted: #333; --card: #fff; --border: #999; --accent: #000; --extras: #ccc; }
+    :root { --bg: #fff; --ink: #000; --muted: #333; --card: #fff; --border: #999; --accent: #000; --accent-ink: #000; --accent-fill: #000; --extras: #ccc; }
     body { background: #fff; color: #000; }
     .wrap { max-width: none; padding: 0; }
     header, footer, main > *:not(#paid), #paid > *:not(#planOut), #planOut > *:not(#planCard) { display: none !important; }
@@ -226,7 +248,7 @@
         <text x="425" y="600" font-family="Arial, sans-serif" font-weight="900" font-size="270" text-anchor="middle" fill="#e8541e">€</text>
       </g>
     </svg>
-    <a class="brand" href="https://www.instagram.com/whatitcosts.ie/">what<span>it</span>costs<span>.ie</span></a>
+    <a class="brand" href="https://www.instagram.com/whatitcosts.ie/" rel="noopener noreferrer">what<span>it</span>costs<span>.ie</span></a>
   </header>
 
   <main>
@@ -317,7 +339,7 @@
           <li>Plan the food shop and check what you already have.</li>
           <li>Avoid putting Christmas on credit if you can.</li>
         </ul>
-        <p class="fine">Struggling? MABS offers free, confidential money advice: <a href="https://www.mabs.ie" rel="noopener">mabs.ie</a></p>
+        <p class="fine">Struggling? MABS offers free, confidential money advice: <a href="https://www.mabs.ie" rel="noopener noreferrer">mabs.ie</a></p>
       </section>
 
       <section class="card locked" id="lockCard">
@@ -331,7 +353,8 @@
           <h3 id="lockTitle">Full planner, €3, coming soon</h3>
           <button type="button" id="soonBtn" disabled>Coming soon</button>
           <div class="buy" id="buyWrap" hidden>
-            <a class="btn primary" id="buyLink" target="_blank" rel="noopener">Get the full planner, €3</a>
+            <a class="btn primary" id="buyLink" target="_blank" rel="noopener noreferrer">Get the full planner, €3</a>
+            <p class="buy-note">€3, one payment, no subscription. No VAT charged. Instant access with a code. You can cancel within 14 days, but the right ends once you have access, which you ask for by paying. See our <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
             <form class="code-form" id="unlockForm">
               <label for="code">Already paid? Enter your code</label>
               <div class="code-row">
@@ -378,8 +401,8 @@
         </div>
 
         <div>
-          <label for="qAside">What you can set aside each payday (€)</label>
-          <input id="qAside" type="text" inputmode="decimal" autocomplete="off" placeholder="Optional">
+          <label for="qAside">What you can set aside each payday (€, optional)</label>
+          <input id="qAside" type="text" inputmode="decimal" autocomplete="off">
           <p class="help">Leave blank to see what your target needs.</p>
           <p class="warn" id="eAside" hidden></p>
         </div>
@@ -410,17 +433,19 @@
   </main>
 
   <footer>
+    <nav class="footer-nav" aria-label="Site">
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="mailto:whatitcosts@gmail.com">Contact</a>
+    </nav>
     <p>Everything is worked out in your browser. We don't send what you type anywhere.</p>
-    <p>For information, not financial advice. Averages come from surveys and differ by source: <a href="https://www.rte.ie/news/business/2025/1224/1550422-household-christmas-spending/" rel="noopener">Retail Ireland (Ibec) via RTÉ</a>. Follow <a href="https://www.instagram.com/whatitcosts.ie/" rel="noopener">@whatitcosts.ie</a> for more Irish prices.</p>
+    <p>For information, not financial advice. Averages come from surveys and differ by source: <a href="https://www.rte.ie/news/business/2025/1224/1550422-household-christmas-spending/" rel="noopener noreferrer">Retail Ireland (Ibec) via RTÉ</a>. Follow <a href="https://www.instagram.com/whatitcosts.ie/" rel="noopener noreferrer">@whatitcosts.ie</a> for more Irish prices.</p>
+    <p>whatitcosts.ie, Ireland.</p>
   </footer>
 </div>
 
 <script>
 (function () {
-  // ---- Paid planner config ----
-  // PAY_URL: your Stripe payment link. Leave "" to show the disabled "Coming soon" button.
-  // CODE_HASH: SHA-256 hex of the unlock code in UPPERCASE. Leave "" and nobody can unlock.
-  //   Make one with: printf '%s' 'YOURCODE' | shasum -a 256
   const PAY_URL = "";
   const CODE_HASH = "8b8f1969cd4303004e1bf98bf2b61636021b37a71b46f7a2d4eb7bfbea71f2cb";
 
@@ -430,7 +455,6 @@
   var budgetEl = $('budget'), weeklyEl = $('weekly'), peopleEl = $('people'), savedEl = $('saved');
   var giftsEl = $('pctGifts'), foodEl = $('pctFood'), modeWeeklyEl = $('modeWeekly');
 
-  // Storage holds the unlock flag and nothing else; without storage it lasts for the visit
   var memory = {};
   function readKey(key) {
     try {
@@ -444,7 +468,6 @@
     memory[key] = obj;
     try { localStorage.setItem(key, JSON.stringify(obj)); } catch (e) {}
   }
-  // Tidy away data from the earlier Wallet version
   try { localStorage.removeItem('whatitcosts_v3'); } catch (e) {}
 
   var stored = readKey(STORE_KEY);
@@ -454,7 +477,6 @@
     return '€' + Math.round(n).toLocaleString('en-IE');
   }
 
-  // Whole euro, or two decimals when there are cents
   function money(n) {
     var c = Math.round(Math.abs(n) * 100);
     if (c % 100 === 0) return '€' + (c / 100).toLocaleString('en-IE');
@@ -466,7 +488,6 @@
     return isFinite(v) && v > 0 ? v : 0;
   }
 
-  // Accepts "12", "12.50", "12,50" or "€12"; blank gives NaN
   function parseAmount(s) {
     var v = parseFloat(String(s).replace(/[€\s]/g, '').replace(',', '.'));
     return isFinite(v) ? Math.round(v * 100) / 100 : NaN;
@@ -478,7 +499,6 @@
     });
   }
 
-  // Whole days from today (local midnight) to the next 25 December
   function daysToChristmas() {
     var now = new Date();
     var y = now.getFullYear();
@@ -488,10 +508,8 @@
     return Math.round((xmas - today) / 86400000);
   }
 
-  // Live figures from the free tool, used to prefill the builder
   var plan = { budget: 0, saved: 0 };
 
-  // ---- Christmas Plan Builder: maths ----
   var WEIGHTS = { Partner: 3, Child: 3, Parent: 2, Grandparent: 1.5, Sibling: 1.5, Friend: 1, Other: 0.5 };
   var SPLIT_PCT = { gifts: 45, food: 40, extras: 15 };
   var LABELS = { gifts: 'Gifts', food: 'Food & drink', extras: 'Extras' };
@@ -506,12 +524,10 @@
   function dayLabel(d) {
     return d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
   }
-  // Whole euro per payday, rounded up so the last payday is the smallest
   function perPayday(total, n) {
     return n ? Math.ceil(round2(Math.max(0, total) / n)) : 0;
   }
 
-  // Paydays from the first one, on or after today and on or before Christmas Eve
   function paydays(first, freq, today, eve) {
     var out = [];
     for (var i = 0; i < 500; i++) {
@@ -530,7 +546,6 @@
     return { gifts: gifts, food: food, extras: round2(budget - gifts - food) };
   }
 
-  // Decided amounts are fixed; everyone else shares the rest by weight, to the nearest €5
   function allocateGifts(people, giftsAmount) {
     var list = people.map(function (p) {
       return { name: p.name, rel: p.rel, fixed: p.decided != null, amount: p.decided != null ? p.decided : 0 };
@@ -551,7 +566,6 @@
     };
   }
 
-  // The whole plan from the answers. Pure: same answers and date give the same plan.
   function buildPlan(a, now) {
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     var year = today > new Date(today.getFullYear(), 11, 25) ? today.getFullYear() + 1 : today.getFullYear();
@@ -595,7 +609,6 @@
     };
   }
 
-  // ---- Christmas Plan Builder: form ----
   var answers = { freq: 'weekly' };
   var targetEdited = false, savedEdited = false, lastPlan = null, rowId = 0;
 
@@ -607,8 +620,8 @@
       '<div class="pr-name"><label for="pn' + id + '">Name</label><input id="pn' + id + '" type="text" maxlength="60" autocomplete="off" data-k="name"></div>' +
       '<div><label for="pr' + id + '">Relationship</label><select id="pr' + id + '" data-k="rel">' +
         Object.keys(WEIGHTS).map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
-      '<div><label for="pd' + id + '">Already decided (€)</label><input id="pd' + id + '" type="text" inputmode="decimal" autocomplete="off" placeholder="Optional" data-k="decided"></div>' +
-      '<button type="button" class="btn small" data-remove>Remove</button>';
+      '<div><label for="pd' + id + '">Already decided (€, optional)</label><input id="pd' + id + '" type="text" inputmode="decimal" autocomplete="off" data-k="decided"></div>' +
+      '<button type="button" class="btn small" data-remove>Remove person</button>';
     row.querySelector('[data-k=name]').value = v.name || '';
     row.querySelector('[data-k=rel]').value = v.rel || 'Partner';
     row.querySelector('[data-k=decided]').value = v.decided != null ? v.decided : '';
@@ -656,7 +669,6 @@
     return { target: target, saved: saved, freq: answers.freq, nextPayday: $('qPayday').value, setAside: aside, people: people };
   }
 
-  // ---- Christmas Plan Builder: output ----
   var LOGO = '<svg class="plan-logo" viewBox="0 0 1000 1000" aria-hidden="true"><circle class="bg" cx="500" cy="500" r="500" fill="#e8541e"/>' +
     '<g transform="rotate(-18 500 500)"><path d="M250 330 H620 L790 500 L620 670 H250 Q210 670 210 630 V370 Q210 330 250 330 Z" fill="#fff6e9"/>' +
     '<circle class="hole" cx="700" cy="500" r="30" fill="#e8541e"/><text x="425" y="600" font-family="Arial, sans-serif" font-weight="900" font-size="270" text-anchor="middle" fill="#e8541e">€</text></g></svg>';
@@ -834,7 +846,6 @@
     $('results').hidden = !(budget > 0);
     if (!(budget > 0)) { persist(); render(); return; }
 
-    // Projected budget (afford-first mode)
     if (weeklyMode) {
       $('projBig').textContent = eur(budget);
       $('projLine').textContent = weeks < 1
@@ -842,7 +853,6 @@
         : "By 25 December you'd have about " + eur(budget) + ', saving ' + eur(num(weeklyEl)) + ' a week for about ' + weeks.toFixed(1) + ' weeks.';
     }
 
-    // a) Versus the average
     var d = Math.round((budget - AVERAGE) / AVERAGE * 100);
     $('vsBig').textContent = d > 0 ? d + '% above' : d < 0 ? Math.abs(d) + '% below' : 'On average';
     var diff = budget - AVERAGE;
@@ -855,7 +865,6 @@
       $('vsLine').textContent = 'Your ' + b + ' matches the average forecast.';
     }
 
-    // b) Save each week
     var left = Math.max(0, budget - saved);
     if (!weeklyMode) {
       if (left === 0) {
@@ -871,7 +880,6 @@
       }
     }
 
-    // c) Editable split; extras is whatever is left, never below 0
     var g = num(giftsEl), f = num(foodEl);
     var x = Math.max(0, 100 - g - f);
     var scale = Math.max(100, g + f);
