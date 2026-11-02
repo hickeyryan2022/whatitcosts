@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Christmas Budget Planner Ireland | whatitcosts.ie</title>
+<meta name="description" content="Free Irish Christmas budget planner. Compare your budget with the average Irish household and see what to save each week until Christmas. Nothing you type is stored or sent.">
+<meta name="theme-color" content="#fff6e9">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e8541e'/%3E%3Ctext x='50' y='70' font-family='Arial,sans-serif' font-weight='900' font-size='60' text-anchor='middle' fill='%23fff6e9'%3E%E2%82%AC%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #fff6e9;
+    --ink: #1d1a16;
+    --muted: #6b6358;
+    --accent: #e8541e;
+    --card: #ffffff;
+    --border: #eadfce;
+    --extras: #c9b99e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --ink: #f5ece0;
+      --card: #221e17;
+      --border: #383126;
+      --muted: #a89d8e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 16px 48px; }
+  header { display: flex; align-items: center; gap: 10px; padding: 20px 0 8px; }
+  header svg { width: 40px; height: 40px; flex: none; }
+  .brand { font-weight: 800; font-size: 20px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; }
+  .brand span { color: var(--accent); }
+  h1 { font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; margin: 20px 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 20px; font-size: 17px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
+  input {
+    width: 100%;
+    font: inherit;
+    font-size: 20px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    -moz-appearance: textfield;
+  }
+  input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input:focus { border-color: var(--accent); }
+  .field + .row, .row + .field { margin-top: 16px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 8px; }
+  .big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .big small { font-size: 18px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+  .line { margin: 0; font-size: 17px; }
+  .fine { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
+  .bar { display: flex; height: 28px; border-radius: 8px; overflow: hidden; margin: 8px 0 14px; }
+  .bar div { height: 100%; }
+  .gifts { background: var(--accent); }
+  .food { background: var(--ink); }
+  .extras { background: var(--extras); }
+  .legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .legend li { display: flex; align-items: center; gap: 8px; font-size: 16px; }
+  .legend .sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .legend .amt { margin-left: auto; font-weight: 700; }
+  .locked { position: relative; overflow: hidden; }
+  .blur { filter: blur(5px); user-select: none; pointer-events: none; color: var(--muted); margin: 0; }
+  .blur li { margin: 4px 0; }
+  .lock-over {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 20px; gap: 12px;
+  }
+  .lock-over h3 { margin: 0; font-size: 20px; }
+  button[disabled] {
+    font: inherit; font-weight: 700; font-size: 16px;
+    padding: 12px 22px; border-radius: 999px; border: 0;
+    background: var(--border); color: var(--muted); cursor: not-allowed;
+  }
+  footer { color: var(--muted); font-size: 14px; margin-top: 24px; }
+  footer p { margin: 0 0 10px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg viewBox="0 0 1000 1000" aria-hidden="true">
+      <circle cx="500" cy="500" r="500" fill="#e8541e"/>
+      <g transform="rotate(-18 500 500)">
+        <path d="M250 330 H620 L790 500 L620 670 H250 Q210 670 210 630 V370 Q210 330 250 330 Z" fill="#fff6e9"/>
+        <circle cx="700" cy="500" r="30" fill="#e8541e"/>
+        <text x="425" y="600" font-family="Arial, sans-serif" font-weight="900" font-size="270" text-anchor="middle" fill="#e8541e">€</text>
+      </g>
+    </svg>
+    <a class="brand" href="https://www.instagram.com/whatitcosts.ie/">what<span>it</span>costs<span>.ie</span></a>
+  </header>
+
+  <main>
+    <h1>Christmas budget planner</h1>
+    <p class="sub">Put in your budget and see how it compares with the average Irish household, and what to save each week.</p>
+
+    <section class="card">
+      <div class="field">
+        <label for="budget">Your Christmas budget (total, in €)</label>
+        <input id="budget" type="number" inputmode="decimal" min="0" step="any" placeholder="1200">
+      </div>
+      <div class="row">
+        <div>
+          <label for="people">People to buy for</label>
+          <input id="people" type="number" inputmode="numeric" min="0" step="1" placeholder="8">
+        </div>
+        <div>
+          <label for="saved">Already saved (€)</label>
+          <input id="saved" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
+        </div>
+      </div>
+    </section>
+
+    <div id="results" hidden aria-live="polite">
+      <section class="card">
+        <h2>Versus the average</h2>
+        <p class="big" id="vsBig"></p>
+        <p class="line" id="vsLine"></p>
+        <p class="fine">Average: €1,600 per household, Retail Ireland (Ibec) forecast for Christmas 2025. Survey figure, not a rule.</p>
+      </section>
+
+      <section class="card">
+        <h2>Save each week</h2>
+        <p class="big" id="weekBig"></p>
+        <p class="line" id="weekLine"></p>
+      </section>
+
+      <section class="card">
+        <h2>A starting split</h2>
+        <div class="bar" aria-hidden="true">
+          <div class="gifts" style="width:50%"></div>
+          <div class="food" style="width:35%"></div>
+          <div class="extras" style="width:15%"></div>
+        </div>
+        <ul class="legend">
+          <li><span class="sw gifts"></span>Gifts (50%)<span class="amt" id="amtGifts"></span></li>
+          <li><span class="sw food"></span>Food &amp; drink (35%)<span class="amt" id="amtFood"></span></li>
+          <li><span class="sw extras"></span>Extras (15%)<span class="amt" id="amtExtras"></span></li>
+        </ul>
+        <p class="line" id="perPerson" style="margin-top:14px" hidden></p>
+        <p class="fine">This 50 / 35 / 15 split is our own rule of thumb to start from. It is not an official or surveyed figure, so change it to suit you.</p>
+      </section>
+
+      <section class="card locked">
+        <ul class="blur" aria-hidden="true">
+          <li>Full planner: gift list per person with running total</li>
+          <li>Week-by-week savings schedule from now to 25 December</li>
+          <li>Printable PDF to stick on the fridge</li>
+          <li>Gift list per person with running total</li>
+          <li>Week-by-week savings schedule</li>
+        </ul>
+        <div class="lock-over">
+          <h3>Full planner, about €5, coming soon</h3>
+          <button type="button" disabled>Coming soon</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <p>Everything is worked out in your browser. We don't store or send what you type.</p>
+    <p>Information only, not financial advice. Averages come from surveys and differ by source: <a href="https://www.rte.ie/news/business/2025/1224/1550422-household-christmas-spending/" rel="noopener">Retail Ireland (Ibec) via RTÉ</a>. Follow <a href="https://www.instagram.com/whatitcosts.ie/" rel="noopener">@whatitcosts.ie</a> for more Irish prices.</p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var AVERAGE = 1600;
+  var $ = function (id) { return document.getElementById(id); };
+  var budgetEl = $('budget'), peopleEl = $('people'), savedEl = $('saved');
+
+  function eur(n) {
+    return '€' + Math.round(n).toLocaleString('en-IE');
+  }
+
+  function num(el) {
+    var v = parseFloat(el.value);
+    return isFinite(v) && v > 0 ? v : 0;
+  }
+
+  // Whole days from today (local midnight) to the next 25 December
+  function daysToChristmas() {
+    var now = new Date();
+    var y = now.getFullYear();
+    var today = Date.UTC(y, now.getMonth(), now.getDate());
+    var xmas = Date.UTC(y, 11, 25);
+    if (today > xmas) xmas = Date.UTC(y + 1, 11, 25);
+    return Math.round((xmas - today) / 86400000);
+  }
+
+  function update() {
+    var budget = num(budgetEl);
+    var people = Math.floor(num(peopleEl));
+    var saved = num(savedEl);
+
+    $('results').hidden = !(budget > 0);
+    if (!(budget > 0)) return;
+
+    // a) Versus the average
+    var d = Math.round((budget - AVERAGE) / AVERAGE * 100);
+    $('vsBig').textContent = d > 0 ? d + '% above' : d < 0 ? Math.abs(d) + '% below' : 'On average';
+    var diff = budget - AVERAGE;
+    var b = eur(budget);
+    if (Math.round(diff) > 0) {
+      $('vsLine').textContent = 'Your ' + b + ' is ' + eur(diff) + ' more than the average forecast.';
+    } else if (Math.round(diff) < 0) {
+      $('vsLine').textContent = 'Your ' + b + ' is ' + eur(-diff) + ' under the average forecast.';
+    } else {
+      $('vsLine').textContent = 'Your ' + b + ' matches the average forecast.';
+    }
+
+    // b) Save each week
+    var weeks = daysToChristmas() / 7;
+    var left = Math.max(0, budget - saved);
+    if (left === 0) {
+      $('weekBig').textContent = 'Sorted';
+      $('weekLine').textContent = "You've already saved your full budget.";
+    } else if (weeks < 1) {
+      $('weekBig').textContent = eur(left);
+      $('weekLine').textContent = "Christmas is almost here, so that's the whole amount still to find.";
+    } else {
+      $('weekBig').innerHTML = '';
+      $('weekBig').append(eur(left / weeks), Object.assign(document.createElement('small'), { textContent: ' a week' }));
+      $('weekLine').textContent = eur(left) + ' still to save over about ' + weeks.toFixed(1) + ' weeks to 25 December.';
+    }
+
+    // c) Starting split
+    var gifts = budget * 0.5;
+    $('amtGifts').textContent = eur(gifts);
+    $('amtFood').textContent = eur(budget * 0.35);
+    $('amtExtras').textContent = eur(budget * 0.15);
+    var pp = $('perPerson');
+    if (people > 0) {
+      pp.textContent = "That's about " + eur(gifts / people) + ' per person on gifts.';
+      pp.hidden = false;
+    } else {
+      pp.hidden = true;
+    }
+  }
+
+  [budgetEl, peopleEl, savedEl].forEach(function (el) {
+    el.addEventListener('input', update);
+  });
+  update();
+})();
+</script>
+</body>
+</html>
