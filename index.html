@@ -27,6 +27,7 @@
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
@@ -51,7 +52,7 @@
     margin-bottom: 16px;
   }
   label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
-  input[type="number"] {
+  input[type="number"], input[type="text"] {
     width: 100%;
     font: inherit;
     font-size: 20px;
@@ -64,7 +65,9 @@
     -moz-appearance: textfield;
   }
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"]:focus { border-color: var(--accent); }
+  input[type="number"]:focus, input[type="text"]:focus { border-color: var(--accent); }
+  input[type="checkbox"] { width: 22px; height: 22px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+  input[type="checkbox"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .field + .row, .row + .field, .mode + .field { margin-top: 16px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .mode {
@@ -97,22 +100,79 @@
   .tips { margin: 0; padding-left: 20px; }
   .tips li { margin: 6px 0; }
   .locked { position: relative; overflow: hidden; }
-  .blur { filter: blur(5px); user-select: none; pointer-events: none; color: var(--muted); margin: 0; }
+  .blur {
+    position: absolute; inset: 20px; opacity: 0.6;
+    filter: blur(5px); user-select: none; pointer-events: none; color: var(--muted); margin: 0;
+  }
   .blur li { margin: 4px 0; }
   .lock-over {
-    position: absolute; inset: 0;
+    position: relative; min-height: 180px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 20px; gap: 12px;
+    text-align: center; gap: 12px;
   }
   .lock-over h3 { margin: 0; font-size: 20px; }
+  .buy { display: grid; gap: 16px; justify-items: center; width: 100%; }
+  .code-form { width: 100%; text-align: left; }
+  .code-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+  .btn {
+    display: inline-block; font: inherit; font-weight: 700; font-size: 16px; line-height: 1.25;
+    padding: 12px 20px; border-radius: 999px; border: 2px solid var(--accent);
+    background: transparent; color: var(--accent); cursor: pointer; text-decoration: none; text-align: center;
+  }
+  .btn.primary { background: var(--accent); color: #fff; }
+  .btn.small { font-size: 14px; padding: 10px 12px; border-color: var(--border); color: var(--muted); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button[disabled] {
     font: inherit; font-weight: 700; font-size: 16px;
     padding: 12px 22px; border-radius: 999px; border: 0;
     background: var(--border); color: var(--muted); cursor: not-allowed;
   }
+  .prow {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: end;
+    padding: 12px 0; border-top: 1px solid var(--border);
+  }
+  .prow:first-child { border-top: 0; padding-top: 0; }
+  .prow .name { grid-column: 1 / -1; }
+  .prow.food-row { grid-template-columns: 1fr 120px auto; }
+  .prow.food-row .name { grid-column: auto; }
+  .prow label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .prow input[type="number"], .prow input[type="text"] { font-size: 17px; padding: 10px 12px; }
+  .prow.over input[data-key="spent"] { border-color: var(--accent); }
+  .flag { grid-column: 1 / -1; margin: 0; font-size: 14px; font-weight: 600; color: var(--accent); }
+  @media (min-width: 520px) {
+    .prow { grid-template-columns: 2fr 1fr 1fr auto; }
+    .prow .name { grid-column: auto; }
+  }
+  .list-actions { margin: 12px 0 16px; }
+  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
+  .totals div { background: var(--bg); border-radius: 10px; padding: 10px; }
+  .totals dt { font-size: 13px; color: var(--muted); }
+  .totals dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .note {
+    margin: 12px 0 0; padding: 10px 12px; border-radius: 10px;
+    background: var(--bg); border-left: 3px solid var(--accent); font-size: 15px;
+  }
+  .sched { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .sched th { font-size: 13px; color: var(--muted); font-weight: 600; text-align: left; padding: 0 4px 6px; }
+  .sched td { padding: 8px 4px; border-top: 1px solid var(--border); }
+  .sched .num { text-align: right; }
+  .sched .tick { text-align: center; width: 48px; }
+  .paid-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
   footer { color: var(--muted); font-size: 14px; margin-top: 24px; }
   footer p { margin: 0 0 10px; }
   a { color: var(--accent); }
+
+  @media print {
+    :root { --bg: #fff; --ink: #000; --muted: #333; --card: #fff; --border: #bbb; }
+    body { background: #fff; color: #000; }
+    .wrap { max-width: none; padding: 0; }
+    .mode, .sub, #lockCard, #tipsCard, button, .btn, .paid-actions, footer, .code-form { display: none !important; }
+    .card { border: 1px solid #bbb; border-radius: 8px; break-inside: avoid; page-break-inside: avoid; }
+    .big, .warn, .flag, a, .brand span { color: #000; }
+    .bar, .sw { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    input[type="number"], input[type="text"] { border: 1px solid #bbb; background: #fff; color: #000; }
+    #paid { break-before: page; page-break-before: always; }
+  }
 </style>
 </head>
 <body>
@@ -200,15 +260,15 @@
           <div class="extras" id="barExtras"></div>
         </div>
         <ul class="legend">
-          <li><span class="sw gifts"></span>Gifts (<span id="lblGifts"></span>%)<span class="amt" id="amtGifts"></span></li>
-          <li><span class="sw food"></span>Food &amp; drink (<span id="lblFood"></span>%)<span class="amt" id="amtFood"></span></li>
-          <li><span class="sw extras"></span>Extras (<span id="lblExtras"></span>%)<span class="amt" id="amtExtras"></span></li>
+          <li><span class="sw gifts"></span><span>Gifts (<span id="lblGifts"></span>%)</span><span class="amt" id="amtGifts"></span></li>
+          <li><span class="sw food"></span><span>Food &amp; drink (<span id="lblFood"></span>%)</span><span class="amt" id="amtFood"></span></li>
+          <li><span class="sw extras"></span><span>Extras (<span id="lblExtras"></span>%)</span><span class="amt" id="amtExtras"></span></li>
         </ul>
         <p class="line" id="perPerson" style="margin-top:14px" hidden></p>
         <p class="fine">This 45 / 40 / 15 split is our own rule of thumb, not an official or surveyed figure. Change it to fit your household.</p>
       </section>
 
-      <section class="card">
+      <section class="card" id="tipsCard">
         <h2>Ways to keep it down</h2>
         <ul class="tips">
           <li>Write the budget down before you shop and stick to it.</li>
@@ -220,34 +280,114 @@
         <p class="fine">Struggling? MABS offers free, confidential money advice: <a href="https://www.mabs.ie" rel="noopener">mabs.ie</a></p>
       </section>
 
-      <section class="card locked">
+      <section class="card locked" id="lockCard">
         <ul class="blur" aria-hidden="true">
           <li>Full planner: gift list per person with running total</li>
           <li>Week-by-week savings schedule from now to 25 December</li>
+          <li>Food shop planner against your food budget</li>
           <li>Printable PDF to stick on the fridge</li>
           <li>Gift list per person with running total</li>
-          <li>Week-by-week savings schedule</li>
         </ul>
         <div class="lock-over">
-          <h3>Full planner, about €5, coming soon</h3>
-          <button type="button" disabled>Coming soon</button>
+          <h3 id="lockTitle">Full planner, €3, coming soon</h3>
+          <button type="button" id="soonBtn" disabled>Coming soon</button>
+          <div class="buy" id="buyWrap" hidden>
+            <a class="btn primary" id="buyLink" target="_blank" rel="noopener">Get the full planner, €3</a>
+            <form class="code-form" id="unlockForm">
+              <label for="code">Already paid? Enter your code</label>
+              <div class="code-row">
+                <input id="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+                <button type="submit" class="btn">Unlock</button>
+              </div>
+              <p class="warn" id="codeErr" hidden>That code doesn't match. Check your payment confirmation.</p>
+            </form>
+          </div>
         </div>
       </section>
+
+      <div id="paid" hidden>
+        <section class="card">
+          <h2>Gift list</h2>
+          <div id="giftList"></div>
+          <div class="list-actions"><button type="button" class="btn" id="addGift">Add person</button></div>
+          <dl class="totals">
+            <div><dt>Spent</dt><dd id="giftSpent"></dd></div>
+            <div><dt>Gifts amount</dt><dd id="giftAmt"></dd></div>
+            <div><dt>Remaining</dt><dd id="giftLeft"></dd></div>
+          </dl>
+          <p class="note" id="giftOver" hidden></p>
+        </section>
+
+        <section class="card">
+          <h2>Weekly savings schedule</h2>
+          <table class="sched">
+            <thead><tr><th>Week of</th><th class="num">Target</th><th class="tick">Done</th><th class="num">Saved so far</th></tr></thead>
+            <tbody id="schedBody"></tbody>
+          </table>
+          <p class="fine">Saved more or less than planned? Update 'Already saved' above and the weekly amount recalculates.</p>
+        </section>
+
+        <section class="card">
+          <h2>Food shop planner</h2>
+          <div id="foodList"></div>
+          <div class="list-actions"><button type="button" class="btn" id="addFood">Add item</button></div>
+          <dl class="totals">
+            <div><dt>Total</dt><dd id="foodTotal"></dd></div>
+            <div><dt>Food &amp; drink amount</dt><dd id="foodAmt"></dd></div>
+            <div><dt>Remaining</dt><dd id="foodLeft"></dd></div>
+          </dl>
+          <p class="note" id="foodOver" hidden></p>
+        </section>
+
+        <section class="card paid-actions">
+          <button type="button" class="btn primary" id="printBtn">Print or save as PDF</button>
+          <button type="button" class="btn small" id="clearPlan">Clear my saved plan</button>
+        </section>
+      </div>
     </div>
   </main>
 
   <footer>
-    <p>Everything is worked out in your browser. We don't store or send what you type.</p>
+    <p>Everything is worked out in your browser and saved on your device and nowhere else. We don't send what you type anywhere.</p>
     <p>For information, not financial advice. Averages come from surveys and differ by source: <a href="https://www.rte.ie/news/business/2025/1224/1550422-household-christmas-spending/" rel="noopener">Retail Ireland (Ibec) via RTÉ</a>. Follow <a href="https://www.instagram.com/whatitcosts.ie/" rel="noopener">@whatitcosts.ie</a> for more Irish prices.</p>
   </footer>
 </div>
 
 <script>
 (function () {
+  // ---- Paid planner config ----
+  // PAY_URL: your Stripe payment link. Leave "" to show the disabled "Coming soon" button.
+  // CODE_HASH: SHA-256 hex of the unlock code in UPPERCASE. Leave "" and nobody can unlock.
+  //   Make one with: printf '%s' 'YOURCODE' | shasum -a 256
+  const PAY_URL = "";
+  const CODE_HASH = "";
+
   var AVERAGE = 1600;
+  var STORE_KEY = 'whatitcosts_v1';
   var $ = function (id) { return document.getElementById(id); };
   var budgetEl = $('budget'), weeklyEl = $('weekly'), peopleEl = $('people'), savedEl = $('saved');
   var giftsEl = $('pctGifts'), foodEl = $('pctFood'), modeWeeklyEl = $('modeWeekly');
+  var giftList = $('giftList'), foodList = $('foodList');
+  var FIELD_IDS = ['budget', 'weekly', 'people', 'saved', 'pctGifts', 'pctFood'];
+
+  // Storage: everything lives under one key; if localStorage is unavailable it lasts for the visit
+  var memoryStore = {};
+  function readStore() {
+    try {
+      var s = localStorage.getItem(STORE_KEY);
+      return s ? JSON.parse(s) : {};
+    } catch (e) {
+      return memoryStore;
+    }
+  }
+  function writeStore(obj) {
+    memoryStore = obj;
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(obj)); } catch (e) {}
+  }
+
+  var stored = readStore();
+  var unlocked = !!CODE_HASH && stored.unlocked === true;
+  var ticks = unlocked && Array.isArray(stored.ticks) ? stored.ticks : [];
 
   function eur(n) {
     return '€' + Math.round(n).toLocaleString('en-IE');
@@ -268,6 +408,144 @@
     return Math.round((xmas - today) / 86400000);
   }
 
+  function iso(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  // ---- Paid planner rows ----
+  var GIFT_FIELDS = [
+    { key: 'name', label: 'Name', cls: 'name' },
+    { key: 'limit', label: 'Limit (€)', money: true },
+    { key: 'spent', label: 'Spent (€)', money: true }
+  ];
+  var FOOD_FIELDS = [
+    { key: 'item', label: 'Item', cls: 'name' },
+    { key: 'price', label: 'Price (€)', money: true }
+  ];
+  var rowId = 0;
+
+  function addRow(list, fields, values, rowCls) {
+    var row = document.createElement('div');
+    row.className = 'prow' + (rowCls ? ' ' + rowCls : '');
+    fields.forEach(function (fd) {
+      var id = 'row' + (++rowId);
+      var wrap = document.createElement('div');
+      if (fd.cls) wrap.className = fd.cls;
+      var lab = document.createElement('label');
+      lab.htmlFor = id;
+      lab.textContent = fd.label;
+      var inp = document.createElement('input');
+      inp.id = id;
+      inp.dataset.key = fd.key;
+      if (fd.money) {
+        inp.type = 'number';
+        inp.inputMode = 'decimal';
+        inp.min = '0';
+        inp.step = 'any';
+      } else {
+        inp.type = 'text';
+        inp.autocomplete = 'off';
+      }
+      inp.value = values && values[fd.key] != null ? values[fd.key] : '';
+      inp.addEventListener('input', update);
+      wrap.append(lab, inp);
+      row.append(wrap);
+    });
+    var rm = document.createElement('button');
+    rm.type = 'button';
+    rm.className = 'btn small';
+    rm.textContent = 'Remove';
+    rm.addEventListener('click', function () { row.remove(); update(); });
+    var flag = document.createElement('p');
+    flag.className = 'flag';
+    flag.hidden = true;
+    row.append(rm, flag);
+    list.append(row);
+    return row;
+  }
+
+  function readRows(list) {
+    return Array.prototype.map.call(list.children, function (row) {
+      var o = {};
+      row.querySelectorAll('input').forEach(function (i) { o[i.dataset.key] = i.value; });
+      return o;
+    });
+  }
+
+  function fieldNum(row, key) {
+    return num(row.querySelector('[data-key="' + key + '"]'));
+  }
+
+  function overNote(id, over, text) {
+    var el = $(id);
+    el.hidden = !(Math.round(over) > 0);
+    el.textContent = text.replace('{X}', eur(over));
+  }
+
+  // One row per remaining week, starting from this week's Monday
+  var schedKey = '';
+  function renderSchedule(weeks, target) {
+    var n = Math.min(30, Math.max(1, Math.ceil(weeks)));
+    var now = new Date();
+    var monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (now.getDay() + 6) % 7);
+    var body = $('schedBody');
+    var key = iso(monday) + '|' + n + '|' + target;
+    if (key !== schedKey) {
+      schedKey = key;
+      body.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        var d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 7 * i);
+        var label = d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' });
+        var tr = document.createElement('tr');
+        tr.dataset.week = iso(d);
+        tr.innerHTML = '<td></td><td class="num"></td><td class="tick"><input type="checkbox"></td><td class="num run"></td>';
+        tr.cells[0].textContent = label;
+        tr.cells[1].textContent = eur(target);
+        var cb = tr.querySelector('input');
+        cb.setAttribute('aria-label', 'Saved for week of ' + label);
+        cb.checked = ticks.indexOf(tr.dataset.week) >= 0;
+        cb.addEventListener('change', onTick);
+        body.append(tr);
+      }
+    }
+    var run = 0;
+    Array.prototype.forEach.call(body.rows, function (tr) {
+      if (tr.querySelector('input').checked) run += target;
+      tr.querySelector('.run').textContent = eur(run);
+    });
+  }
+
+  function onTick(e) {
+    var week = e.target.closest('tr').dataset.week;
+    ticks = ticks.filter(function (w) { return w !== week; });
+    if (e.target.checked) ticks.push(week);
+    update();
+  }
+
+  function persist() {
+    if (!unlocked) return;
+    var fields = {};
+    FIELD_IDS.forEach(function (id) { fields[id] = $(id).value; });
+    writeStore({
+      unlocked: true,
+      mode: modeWeeklyEl.checked ? 'weekly' : 'budget',
+      fields: fields,
+      gifts: readRows(giftList),
+      food: readRows(foodList),
+      ticks: ticks
+    });
+  }
+
+  function renderLock() {
+    var live = !!PAY_URL;
+    $('lockCard').hidden = unlocked;
+    $('paid').hidden = !unlocked;
+    $('lockTitle').textContent = live ? 'Full planner, €3. One payment, yours for this Christmas.' : 'Full planner, €3, coming soon';
+    $('soonBtn').hidden = live;
+    $('buyWrap').hidden = !live;
+    if (live) $('buyLink').href = PAY_URL;
+  }
+
   function update() {
     var weeklyMode = modeWeeklyEl.checked;
     var people = Math.floor(num(peopleEl));
@@ -282,7 +560,7 @@
     var budget = weeklyMode ? num(weeklyEl) * weeks + saved : num(budgetEl);
 
     $('results').hidden = !(budget > 0);
-    if (!(budget > 0)) return;
+    if (!(budget > 0)) { persist(); return; }
 
     // Projected budget (afford-first mode)
     if (weeklyMode) {
@@ -306,8 +584,8 @@
     }
 
     // b) Save each week
+    var left = Math.max(0, budget - saved);
     if (!weeklyMode) {
-      var left = Math.max(0, budget - saved);
       if (left === 0) {
         $('weekBig').textContent = 'Sorted';
         $('weekLine').textContent = "You've already saved your full budget.";
@@ -333,8 +611,9 @@
     $('lblFood').textContent = f;
     $('lblExtras').textContent = x;
     var gifts = budget * g / 100;
+    var food = budget * f / 100;
     $('amtGifts').textContent = eur(gifts);
-    $('amtFood').textContent = eur(budget * f / 100);
+    $('amtFood').textContent = eur(food);
     $('amtExtras').textContent = eur(budget * x / 100);
     var pp = $('perPerson');
     if (people > 0) {
@@ -343,13 +622,90 @@
     } else {
       pp.hidden = true;
     }
+
+    // d) Paid planner
+    if (unlocked) {
+      var spent = 0;
+      Array.prototype.forEach.call(giftList.children, function (row) {
+        var lim = fieldNum(row, 'limit'), sp = fieldNum(row, 'spent');
+        var flag = row.querySelector('.flag');
+        spent += sp;
+        flag.hidden = !(lim > 0 && Math.round(sp - lim) > 0);
+        flag.textContent = 'Spent is ' + eur(sp - lim) + ' over this limit.';
+        row.classList.toggle('over', !flag.hidden);
+      });
+      $('giftSpent').textContent = eur(spent);
+      $('giftAmt').textContent = eur(gifts);
+      $('giftLeft').textContent = eur(Math.max(0, gifts - spent));
+      overNote('giftOver', spent - gifts, "You're {X} over your gifts amount. Move some from Extras or trim a limit.");
+
+      var weeklyTarget = weeklyMode ? num(weeklyEl) : (weeks < 1 ? left : left / weeks);
+      renderSchedule(weeks, Math.round(weeklyTarget));
+
+      var foodTotal = 0;
+      Array.prototype.forEach.call(foodList.children, function (row) { foodTotal += fieldNum(row, 'price'); });
+      $('foodTotal').textContent = eur(foodTotal);
+      $('foodAmt').textContent = eur(food);
+      $('foodLeft').textContent = eur(Math.max(0, food - foodTotal));
+      overNote('foodOver', foodTotal - food, "You're {X} over your food & drink amount. Move some from Extras or trim the list.");
+    }
+
+    persist();
   }
+
+  // Restore a saved plan
+  if (unlocked) {
+    var f0 = stored.fields || {};
+    FIELD_IDS.forEach(function (id) { if (f0[id] != null) $(id).value = f0[id]; });
+    if (stored.mode === 'weekly') modeWeeklyEl.checked = true;
+    (stored.gifts || []).forEach(function (r) { addRow(giftList, GIFT_FIELDS, r); });
+    (stored.food || []).forEach(function (r) { addRow(foodList, FOOD_FIELDS, r, 'food-row'); });
+  }
+
+  $('unlockForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = $('code').value.trim().toUpperCase();
+    var err = $('codeErr');
+    if (!CODE_HASH || !code || !window.crypto || !crypto.subtle) { err.hidden = false; return; }
+    crypto.subtle.digest('SHA-256', new TextEncoder().encode(code)).then(function (buf) {
+      var hex = Array.prototype.map.call(new Uint8Array(buf), function (n) { return n.toString(16).padStart(2, '0'); }).join('');
+      if (hex === CODE_HASH.toLowerCase()) {
+        unlocked = true;
+        err.hidden = true;
+        renderLock();
+        update();
+      } else {
+        err.hidden = false;
+      }
+    });
+  });
+
+  $('addGift').addEventListener('click', function () {
+    addRow(giftList, GIFT_FIELDS).querySelector('input').focus();
+    update();
+  });
+  $('addFood').addEventListener('click', function () {
+    addRow(foodList, FOOD_FIELDS, null, 'food-row').querySelector('input').focus();
+    update();
+  });
+  $('printBtn').addEventListener('click', function () { window.print(); });
+  $('clearPlan').addEventListener('click', function () {
+    if (!confirm('Clear your saved plan from this device? This cannot be undone.')) return;
+    giftList.innerHTML = '';
+    foodList.innerHTML = '';
+    ticks = [];
+    schedKey = '';
+    FIELD_IDS.forEach(function (id) { $(id).value = $(id).defaultValue; });
+    $('modeBudget').checked = true;
+    update();
+  });
 
   [budgetEl, weeklyEl, peopleEl, savedEl, giftsEl, foodEl].forEach(function (el) {
     el.addEventListener('input', update);
   });
   $('modeBudget').addEventListener('change', update);
   modeWeeklyEl.addEventListener('change', update);
+  renderLock();
   update();
 })();
 </script>
