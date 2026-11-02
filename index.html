@@ -2,7 +2,7 @@
 <html lang="en-IE">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Christmas Budget Planner Ireland | whatitcosts.ie</title>
 <meta name="description" content="Free Irish Christmas budget planner. See how your budget compares with the average household and what to save each week. Nothing you type is sent anywhere.">
 <meta name="theme-color" content="#fff6e9">
@@ -52,7 +52,7 @@
     margin-bottom: 16px;
   }
   label { display: block; font-weight: 600; font-size: 15px; margin-bottom: 6px; }
-  input[type="number"], input[type="text"], select {
+  input[type="number"], input[type="text"], input[type="date"], select {
     width: 100%;
     font: inherit;
     font-size: 20px;
@@ -64,8 +64,9 @@
     outline: none;
     -moz-appearance: textfield;
   }
+  input[type="date"] { -webkit-appearance: none; appearance: none; min-height: 54px; display: block; }
   input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type="number"]:focus, input[type="text"]:focus, select:focus { border-color: var(--accent); }
+  input[type="number"]:focus, input[type="text"]:focus, input[type="date"]:focus, select:focus { border-color: var(--accent); }
   .field + .row, .row + .field, .mode + .field { margin-top: 16px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .mode {
@@ -120,106 +121,97 @@
   .btn.primary { background: var(--accent); color: #fff; }
   .btn.small { font-size: 14px; padding: 8px 14px; border-color: var(--border); color: var(--muted); }
   .btn.wide { display: block; width: 100%; }
-  .btn:focus-visible, .linkbtn:focus-visible, .tabbar button:focus-visible, .cat-btn:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 2px;
-  }
+  .btn:focus-visible, .choice:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button[disabled] {
     font: inherit; font-weight: 700; font-size: 16px;
     padding: 12px 22px; border-radius: 999px; border: 0;
     background: var(--border); color: var(--muted); cursor: not-allowed;
   }
-  .linkbtn {
-    font: inherit; font-weight: 700; color: var(--accent); background: none; border: 0;
-    padding: 10px 0; min-height: 44px; cursor: pointer; text-decoration: underline;
-  }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   footer { color: var(--muted); font-size: 14px; margin-top: 24px; }
   footer p { margin: 0 0 10px; }
   a { color: var(--accent); }
 
-  /* ---- Christmas Wallet ---- */
-  .wallet { margin-top: 32px; }
-  .wallet-title { font-size: 24px; letter-spacing: -0.01em; text-transform: none; color: var(--ink); margin: 0 0 12px; }
-  .wallet .muted { color: var(--muted); }
-  .wallet .card h3 { margin: 0; font-size: 18px; overflow-wrap: anywhere; }
-  .tabbar {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 4px; margin-bottom: 16px;
-  }
-  .tabbar button {
-    min-height: 48px; font: inherit; font-weight: 700; font-size: 15px; border: 0; border-radius: 10px;
-    background: transparent; color: var(--muted); cursor: pointer;
-  }
-  .tabbar button[aria-selected="true"] { background: var(--accent); color: #fff; }
-  .tip { display: flex; align-items: center; gap: 12px; justify-content: space-between; font-size: 15px; padding: 12px 16px; }
-  .tip p { margin: 0; }
-  .tip .linkbtn { white-space: nowrap; }
-  .cat { padding: 10px 0; }
-  .cat + .cat { border-top: 1px solid var(--border); }
-  .cat-top { display: flex; justify-content: space-between; gap: 12px; font-weight: 600; }
-  .cat-state { color: var(--muted); text-align: right; }
-  .cat-state.over { color: var(--accent); }
-  .cat-sub { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .meter { height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; margin: 6px 0 4px; }
-  .meter div { height: 100%; border-radius: 999px; }
-  .entries { list-style: none; margin: 0; padding: 0; }
-  .entry { padding: 10px 0; border-top: 1px solid var(--border); }
-  .entry:first-child { border-top: 0; }
-  .entry-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .entry-main { flex: 1 1 160px; min-width: 0; }
-  .entry-amt { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
-  .entry-meta { display: block; font-size: 14px; color: var(--muted); overflow-wrap: anywhere; }
-  .entry-btns, .form-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-  .edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .edit-grid label, .person-form label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
-  .edit-grid input, .person-form input, .week input { font-size: 17px; padding: 10px 12px; }
-  .stack > * + * { margin-top: 14px; }
-  .cats { border: 0; padding: 0; margin: 0; }
-  .cats legend { font-weight: 600; font-size: 15px; margin-bottom: 6px; padding: 0; }
-  .cat-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .cat-btn {
-    min-height: 56px; font: inherit; font-weight: 700; font-size: 15px; line-height: 1.2; padding: 8px 6px;
+  /* ---- Christmas Plan Builder ---- */
+  .builder { margin-top: 32px; }
+  .builder-title { font-size: 24px; letter-spacing: -0.01em; text-transform: none; color: var(--ink); margin: 0 0 6px; }
+  .stack > * + * { margin-top: 18px; }
+  .group { border: 0; padding: 0; margin-left: 0; margin-right: 0; min-width: 0; }
+  .row.align-end { align-items: end; }
+  .group legend { font-weight: 600; font-size: 15px; margin-bottom: 6px; padding: 0; }
+  .help { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .choice {
+    min-height: 52px; font: inherit; font-weight: 700; font-size: 15px; line-height: 1.2; padding: 8px 6px;
     border: 2px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--ink); cursor: pointer;
   }
-  .cat-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
-  .totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0; }
-  .totals.two { grid-template-columns: repeat(2, 1fr); }
-  .totals div { background: var(--bg); border-radius: 10px; padding: 10px; min-width: 0; }
-  .totals dt { font-size: 13px; color: var(--muted); }
-  .totals dd { margin: 0; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .person-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; align-items: end;
+    padding: 14px 0; border-top: 1px solid var(--border);
+  }
+  .person-row:first-child { border-top: 0; padding-top: 4px; }
+  .person-row .pr-name { grid-column: 1 / -1; }
+  .person-row label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .person-row input, .person-row select { font-size: 17px; padding: 10px 12px; }
+  .person-row .btn { grid-column: 1 / -1; justify-self: start; }
   .note {
-    margin: 12px 0 0; padding: 10px 12px; border-radius: 10px;
-    background: var(--bg); border-left: 3px solid var(--accent); font-size: 15px;
+    margin: 0 0 16px; padding: 12px 14px; border-radius: 12px;
+    background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); font-size: 16px;
   }
-  .person-stats { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; margin: 4px 0 0; }
-  .person-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-  .person-head .cat-state { font-weight: 600; flex: none; }
-  .person-form .row { margin-bottom: 12px; }
-  .weeks { list-style: none; margin: 0; padding: 0; }
-  .week { padding: 12px 0; border-top: 1px solid var(--border); }
-  .week:first-child { border-top: 0; padding-top: 0; }
-  .week-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; }
-  .week-date { font-weight: 700; }
-  .week-sub { display: block; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .tag { display: inline-block; font-size: 12px; font-weight: 700; color: var(--accent); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .week-edit { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 8px; align-items: end; }
-  .plan-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
-  input[type="file"].sr-only:focus-visible + label { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .toast {
-    position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 20;
-    max-width: 608px; margin: 0 auto; display: flex; align-items: center; gap: 12px; justify-content: space-between;
-    background: var(--ink); color: var(--bg); border-radius: 12px; padding: 10px 16px; font-size: 15px;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  .note p { margin: 0; }
+  .note p + p { margin-top: 6px; }
+  .keep-tip { margin: 0 0 12px; font-size: 15px; color: var(--muted); }
+  .plan { padding: 22px 20px; }
+  .plan-head { display: flex; align-items: center; gap: 12px; }
+  .plan-head svg { width: 48px; height: 48px; flex: none; }
+  .plan-head h3 { margin: 0; font-size: 22px; line-height: 1.2; letter-spacing: -0.01em; }
+  .plan-year { margin: 0; font-size: 14px; font-weight: 700; color: var(--accent); letter-spacing: 0.06em; }
+  .plan-budget { margin: 16px 0 0; font-size: 17px; }
+  .plan-budget strong { display: block; font-size: 40px; line-height: 1.1; color: var(--accent); letter-spacing: -0.02em; }
+  .plan h4 {
+    margin: 22px 0 8px; padding-top: 16px; border-top: 1px solid var(--border);
+    font-size: 14px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
   }
-  .toast .linkbtn { color: var(--bg); padding: 8px 4px; }
-  @media (max-width: 699px) {
-    .tabbar {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; margin: 0;
-      border-radius: 0; border-width: 1px 0 0;
-      padding: 6px max(8px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
-    }
-    body.has-tabbar { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
-    body.has-tabbar .toast { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .plan .bar { margin: 4px 0 12px; height: 22px; }
+  .plan-list { list-style: none; margin: 0; padding: 0; }
+  .plan-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 6px 0; font-size: 16px; }
+  .plan-list li + li { border-top: 1px dashed var(--border); }
+  .plan-list .who { min-width: 0; overflow-wrap: anywhere; }
+  .plan-list .rel { color: var(--muted); font-size: 14px; }
+  .plan-list .amt { font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+  .plan-msg { margin: 8px 0 0; font-size: 15px; }
+  .sched { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .sched th { font-size: 13px; color: var(--muted); font-weight: 600; text-align: left; padding: 0 0 4px; }
+  .sched td { padding: 6px 0; border-top: 1px dashed var(--border); }
+  .sched .num { text-align: right; }
+  .sched td.num:first-of-type { font-weight: 700; }
+  .plan-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .copy-msg { margin: 8px 0 0; min-height: 1.5em; font-size: 15px; font-weight: 600; color: var(--accent); }
+
+  @media print {
+    :root { --bg: #fff; --ink: #000; --muted: #333; --card: #fff; --border: #999; --accent: #000; --extras: #ccc; }
+    body { background: #fff; color: #000; }
+    .wrap { max-width: none; padding: 0; }
+    header, footer, main > *:not(#paid), #paid > *:not(#planOut), #planOut > *:not(#planCard) { display: none !important; }
+    .builder { margin: 0; }
+    #planCard { margin: 0; border: 1px solid #999; break-inside: avoid; page-break-inside: avoid; }
+    .plan .bar div, .plan .sw { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .plan .gifts { background: #000; }
+    .plan .food { background: #777; }
+    .plan-logo .bg, .plan-logo .hole, .plan-logo text { fill: #000; }
+    .plan-logo path { fill: #fff; }
+    .plan { padding: 14px 18px; font-size: 14px; }
+    .plan-head svg { width: 36px; height: 36px; }
+    .plan-budget { margin-top: 8px; }
+    .plan-budget strong { font-size: 30px; }
+    .plan h4 { margin: 12px 0 4px; padding-top: 8px; }
+    .plan .bar { height: 14px; margin: 2px 0 6px; }
+    .legend { gap: 2px; }
+    .legend li, .plan-list li, .sched { font-size: 14px; }
+    .plan-list li, .sched td { padding: 2px 0; }
+    .plan-msg { margin-top: 4px; font-size: 14px; }
+    .plan .fine { margin-top: 8px; font-size: 11px; }
+    @page { margin: 12mm; }
   }
 </style>
 </head>
@@ -330,10 +322,10 @@
 
       <section class="card locked" id="lockCard">
         <ul class="blur" aria-hidden="true">
-          <li>Track every purchase and see what's left in each category</li>
-          <li>Set a limit for each person and see how each gift is going</li>
-          <li>A weekly saving plan that adjusts as you go</li>
-          <li>Saved on your phone, with a backup you can download</li>
+          <li>Gift amounts for each person that add up to your budget</li>
+          <li>A payday-by-payday saving plan with dates</li>
+          <li>A tighter Plan B if money is short</li>
+          <li>One plan to share or screenshot. Nothing is saved.</li>
         </ul>
         <div class="lock-over">
           <h3 id="lockTitle">Full planner, €3, coming soon</h3>
@@ -353,143 +345,72 @@
       </section>
     </div>
 
-    <section class="wallet" id="paid" hidden aria-labelledby="walletTitle">
-      <h2 class="wallet-title" id="walletTitle">Christmas Wallet</h2>
+    <section class="builder" id="paid" hidden aria-labelledby="builderTitle">
+      <h2 class="builder-title" id="builderTitle">Christmas Plan Builder</h2>
+      <p class="sub">Answer a few questions once and get one complete plan. Nothing is kept after you leave the page.</p>
 
-      <nav class="tabbar" role="tablist" aria-label="Wallet">
-        <button type="button" role="tab" id="tab-home" aria-controls="panel-home" data-tab="home">Home</button>
-        <button type="button" role="tab" id="tab-add" aria-controls="panel-add" data-tab="add">Add</button>
-        <button type="button" role="tab" id="tab-gifts" aria-controls="panel-gifts" data-tab="gifts">Gifts</button>
-        <button type="button" role="tab" id="tab-saving" aria-controls="panel-saving" data-tab="saving">Saving</button>
-      </nav>
-
-      <div class="card tip" id="tip" hidden>
-        <p>Tip: add this page to your home screen so it opens like an app.</p>
-        <button type="button" class="linkbtn" data-action="tip-ok">Got it</button>
-      </div>
-      <p class="card line" id="noBudget" hidden>Put your Christmas budget in above and your wallet fills in from there.</p>
-
-      <div role="tabpanel" id="panel-home" aria-labelledby="tab-home">
-        <section class="card">
-          <h2>Left to spend</h2>
-          <p class="big" id="hLeft"></p>
-          <p class="line" id="hOf"></p>
-          <p class="line muted" id="hDays"></p>
-        </section>
-        <section class="card">
-          <h2>By category</h2>
-          <div id="hCats"></div>
-        </section>
-        <section class="card" id="hWeekCard">
-          <h2>This week's saving</h2>
-          <p class="line" id="hWeek"></p>
-          <p style="margin:12px 0 0"><button type="button" class="btn" data-action="tab" data-tab="saving">Open Saving</button></p>
-        </section>
-        <section class="card">
-          <h2 id="hEntriesTitle">Recent spending</h2>
-          <ul class="entries" id="hEntries"></ul>
-          <button type="button" class="linkbtn" data-action="toggle-all" id="seeAll">See all</button>
-        </section>
-      </div>
-
-      <div role="tabpanel" id="panel-add" aria-labelledby="tab-add">
-        <form class="card stack" id="addForm" novalidate>
-          <h2>Add spending</h2>
+      <form class="card stack" id="planForm" novalidate>
+        <div class="row align-end">
           <div>
-            <label for="addAmt">Amount (€)</label>
-            <input id="addAmt" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
-          </div>
-          <fieldset class="cats">
-            <legend>Category</legend>
-            <div class="cat-btns">
-              <button type="button" class="cat-btn" data-cat="gifts" aria-pressed="false">Gifts</button>
-              <button type="button" class="cat-btn" data-cat="food" aria-pressed="false">Food &amp; drink</button>
-              <button type="button" class="cat-btn" data-cat="extras" aria-pressed="false">Extras</button>
-            </div>
-          </fieldset>
-          <div id="forWrap" hidden>
-            <label for="addFor">For</label>
-            <select id="addFor"></select>
+            <label for="qTarget">Your Christmas target (€)</label>
+            <input id="qTarget" type="text" inputmode="decimal" autocomplete="off" placeholder="1200">
           </div>
           <div>
-            <label for="addNote">Note (optional)</label>
-            <input id="addNote" type="text" maxlength="80" autocomplete="off">
+            <label for="qSaved">Already saved (€)</label>
+            <input id="qSaved" type="text" inputmode="decimal" autocomplete="off" placeholder="0">
           </div>
-          <p class="warn" id="addErr" hidden></p>
-          <button type="submit" class="btn primary wide">Add</button>
-        </form>
-      </div>
-
-      <div role="tabpanel" id="panel-gifts" aria-labelledby="tab-gifts">
-        <section class="card">
-          <h2>Gift limits</h2>
-          <dl class="totals">
-            <div><dt>Limits</dt><dd id="gLimits"></dd></div>
-            <div><dt>Gifts amount</dt><dd id="gAmt"></dd></div>
-            <div><dt id="gDiffLabel">Spare</dt><dd id="gDiff"></dd></div>
-          </dl>
-          <p class="note" id="gOver" hidden></p>
-          <p class="line" id="gUnassigned" style="margin-top:12px" hidden></p>
-          <p class="fine" id="gPlanned" hidden></p>
-          <p style="margin:12px 0 0"><button type="button" class="btn" data-action="even-split" id="evenBtn">Split the gifts amount evenly</button></p>
-        </section>
-        <div id="gPeople"></div>
-        <form class="card person-form" id="personForm" novalidate>
-          <h2>Add person</h2>
-          <div class="row">
-            <div>
-              <label for="pName">Name</label>
-              <input id="pName" type="text" maxlength="60" autocomplete="off">
-            </div>
-            <div>
-              <label for="pLimit">Limit (€)</label>
-              <input id="pLimit" type="text" inputmode="decimal" autocomplete="off">
-            </div>
-          </div>
-          <p class="warn" id="pErr" hidden></p>
-          <button type="submit" class="btn">Add person</button>
-        </form>
-      </div>
-
-      <div role="tabpanel" id="panel-saving" aria-labelledby="tab-saving">
-        <section class="card">
-          <h2>Saved so far</h2>
-          <p class="big" id="sSoFar"></p>
-          <p class="line" id="sOf"></p>
-          <p class="line" id="sStatus" style="font-weight:700"></p>
-          <dl class="totals two" style="margin-top:12px">
-            <div><dt>Target to date</dt><dd id="sTarget"></dd></div>
-            <div><dt>Saved to date</dt><dd id="sActual"></dd></div>
-          </dl>
-        </section>
-        <section class="card">
-          <h2>Week by week, from Monday</h2>
-          <ul class="weeks" id="sWeeks"></ul>
-          <p class="fine">Week targets share out what's left to save across the weeks you haven't marked yet.</p>
-        </section>
-      </div>
-
-      <section class="card" id="planCard">
-        <h2>Your plan</h2>
-        <p class="line">Saved on this device and nowhere else. If you clear your browser data or switch phone, it's gone.</p>
-        <div class="plan-btns">
-          <button type="button" class="btn" data-action="backup">Download a backup</button>
-          <input type="file" id="restoreFile" class="sr-only" accept="application/json,.json">
-          <label for="restoreFile" class="btn" style="margin:0">Restore from backup</label>
-          <button type="button" class="btn small" data-action="clear">Clear my plan</button>
         </div>
-        <p class="warn" id="planMsg" hidden></p>
-      </section>
+        <p class="warn" id="eTarget" hidden></p>
 
-      <div class="toast" id="toast" role="status" aria-live="polite" hidden>
-        <span id="toastText"></span>
-        <button type="button" class="linkbtn" id="toastUndo" hidden>Undo</button>
+        <fieldset class="group">
+          <legend>How often are you paid?</legend>
+          <div class="choices">
+            <button type="button" class="choice" data-freq="weekly" aria-pressed="true">Weekly</button>
+            <button type="button" class="choice" data-freq="fortnightly" aria-pressed="false">Fortnightly</button>
+            <button type="button" class="choice" data-freq="monthly" aria-pressed="false">Monthly</button>
+          </div>
+        </fieldset>
+
+        <div>
+          <label for="qPayday">Next payday</label>
+          <input id="qPayday" type="date">
+          <p class="warn" id="ePayday" hidden></p>
+        </div>
+
+        <div>
+          <label for="qAside">What you can set aside each payday (€)</label>
+          <input id="qAside" type="text" inputmode="decimal" autocomplete="off" placeholder="Optional">
+          <p class="help">Leave blank to see what your target needs.</p>
+          <p class="warn" id="eAside" hidden></p>
+        </div>
+
+        <fieldset class="group">
+          <legend>Who are you buying for?</legend>
+          <div id="qPeople"></div>
+          <button type="button" class="btn" id="addPerson">Add person</button>
+          <p class="warn" id="ePeople" hidden></p>
+        </fieldset>
+
+        <button type="submit" class="btn primary wide">Build my plan</button>
+      </form>
+
+      <div id="planOut" hidden>
+        <div class="note" id="reality" hidden></div>
+        <p class="keep-tip">Take a screenshot to keep it. We don't save anything.</p>
+        <article class="card plan" id="planCard" aria-label="Your Christmas plan"></article>
+        <div class="plan-actions">
+          <button type="button" class="btn primary" id="shareBtn">Share</button>
+          <button type="button" class="btn" id="copyBtn">Copy as text</button>
+          <button type="button" class="btn" id="printBtn">Print or save as PDF</button>
+          <button type="button" class="btn small" id="editBtn">Edit answers</button>
+        </div>
+        <p class="copy-msg" id="copyMsg" role="status" aria-live="polite"></p>
       </div>
     </section>
   </main>
 
   <footer>
-    <p>Everything is worked out in your browser and saved on your device and nowhere else. We don't send what you type anywhere.</p>
+    <p>Everything is worked out in your browser. We don't send what you type anywhere.</p>
     <p>For information, not financial advice. Averages come from surveys and differ by source: <a href="https://www.rte.ie/news/business/2025/1224/1550422-household-christmas-spending/" rel="noopener">Retail Ireland (Ibec) via RTÉ</a>. Follow <a href="https://www.instagram.com/whatitcosts.ie/" rel="noopener">@whatitcosts.ie</a> for more Irish prices.</p>
   </footer>
 </div>
@@ -505,13 +426,11 @@
 
   var AVERAGE = 1600;
   var STORE_KEY = 'whatitcosts_v1';
-  var WALLET_KEY = 'whatitcosts_v3';
   var $ = function (id) { return document.getElementById(id); };
   var budgetEl = $('budget'), weeklyEl = $('weekly'), peopleEl = $('people'), savedEl = $('saved');
   var giftsEl = $('pctGifts'), foodEl = $('pctFood'), modeWeeklyEl = $('modeWeekly');
-  var FIELD_IDS = ['budget', 'weekly', 'people', 'saved', 'pctGifts', 'pctFood'];
 
-  // Storage: if localStorage is unavailable, everything lasts for the visit
+  // Storage holds the unlock flag and nothing else; without storage it lasts for the visit
   var memory = {};
   function readKey(key) {
     try {
@@ -525,6 +444,8 @@
     memory[key] = obj;
     try { localStorage.setItem(key, JSON.stringify(obj)); } catch (e) {}
   }
+  // Tidy away data from the earlier Wallet version
+  try { localStorage.removeItem('whatitcosts_v3'); } catch (e) {}
 
   var stored = readKey(STORE_KEY);
   var unlocked = !!CODE_HASH && stored.unlocked === true;
@@ -533,7 +454,7 @@
     return '€' + Math.round(n).toLocaleString('en-IE');
   }
 
-  // Wallet amounts: whole euro, or two decimals when there are cents
+  // Whole euro, or two decimals when there are cents
   function money(n) {
     var c = Math.round(Math.abs(n) * 100);
     if (c % 100 === 0) return '€' + (c / 100).toLocaleString('en-IE');
@@ -545,7 +466,7 @@
     return isFinite(v) && v > 0 ? v : 0;
   }
 
-  // Accepts "12", "12.50", "12,50" or "€12"
+  // Accepts "12", "12.50", "12,50" or "€12"; blank gives NaN
   function parseAmount(s) {
     var v = parseFloat(String(s).replace(/[€\s]/g, '').replace(',', '.'));
     return isFinite(v) ? Math.round(v * 100) / 100 : NaN;
@@ -567,530 +488,329 @@
     return Math.round((xmas - today) / 86400000);
   }
 
-  function iso(d) {
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  }
+  // Live figures from the free tool, used to prefill the builder
+  var plan = { budget: 0, saved: 0 };
+
+  // ---- Christmas Plan Builder: maths ----
+  var WEIGHTS = { Partner: 3, Child: 3, Parent: 2, Grandparent: 1.5, Sibling: 1.5, Friend: 1, Other: 0.5 };
+  var SPLIT_PCT = { gifts: 45, food: 40, extras: 15 };
+  var LABELS = { gifts: 'Gifts', food: 'Food & drink', extras: 'Extras' };
+  var PLAN_B = 0.8;
+
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function sum(list, fn) { return list.reduce(function (t, x) { return t + fn(x); }, 0); }
   function fromIso(s) {
     var p = s.split('-');
     return new Date(+p[0], +p[1] - 1, +p[2]);
   }
-  function monday(d) {
-    return new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7);
+  function dayLabel(d) {
+    return d.toLocaleDateString('en-IE', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '');
   }
-  function shortDate(d, withDay) {
-    return d.toLocaleDateString('en-IE', withDay ? { weekday: 'short', day: 'numeric', month: 'short' } : { day: 'numeric', month: 'short' });
+  // Whole euro per payday, rounded up so the last payday is the smallest
+  function perPayday(total, n) {
+    return n ? Math.ceil(round2(Math.max(0, total) / n)) : 0;
   }
 
-  // Live figures from the free tool, read by the wallet
-  var plan = { budget: 0, saved: 0, people: 0, gifts: 0, food: 0, extras: 0 };
+  // Paydays from the first one, on or after today and on or before Christmas Eve
+  function paydays(first, freq, today, eve) {
+    var out = [];
+    for (var i = 0; i < 500; i++) {
+      var d = freq === 'monthly'
+        ? new Date(first.getFullYear(), first.getMonth() + i,
+            Math.min(first.getDate(), new Date(first.getFullYear(), first.getMonth() + i + 1, 0).getDate()))
+        : new Date(first.getFullYear(), first.getMonth(), first.getDate() + i * (freq === 'fortnightly' ? 14 : 7));
+      if (d > eve) break;
+      if (d >= today) out.push(d);
+    }
+    return out;
+  }
 
-  // ---- Christmas Wallet data ----
-  var CATS = { gifts: 'Gifts', food: 'Food & drink', extras: 'Extras' };
-  var CATS_TABS = ['home', 'add', 'gifts', 'saving'];
-  var wallet = loadWallet(readKey(WALLET_KEY));
-  var ui = { showAll: false, editEntry: null, editPerson: null, editWeek: null };
-  var lastRemoved = null, toastTimer = null;
+  function splitOf(budget) {
+    var gifts = round2(budget * SPLIT_PCT.gifts / 100), food = round2(budget * SPLIT_PCT.food / 100);
+    return { gifts: gifts, food: food, extras: round2(budget - gifts - food) };
+  }
 
-  function loadWallet(o) {
+  // Decided amounts are fixed; everyone else shares the rest by weight, to the nearest €5
+  function allocateGifts(people, giftsAmount) {
+    var list = people.map(function (p) {
+      return { name: p.name, rel: p.rel, fixed: p.decided != null, amount: p.decided != null ? p.decided : 0 };
+    });
+    var fixedTotal = round2(sum(list.filter(function (g) { return g.fixed; }), function (g) { return g.amount; }));
+    var pool = round2(giftsAmount - fixedTotal);
+    var flex = list.filter(function (g) { return !g.fixed; });
+    if (pool > 0 && flex.length) {
+      var wsum = sum(flex, function (g) { return WEIGHTS[g.rel]; });
+      flex.forEach(function (g) { g.amount = Math.round(pool * WEIGHTS[g.rel] / wsum / 5) * 5; });
+      var top = flex.reduce(function (a, g) { return WEIGHTS[g.rel] > WEIGHTS[a.rel] ? g : a; });
+      top.amount = round2(top.amount + pool - sum(flex, function (g) { return g.amount; }));
+    }
     return {
-      entries: Array.isArray(o.entries) ? o.entries : [],
-      people: Array.isArray(o.people) ? o.people : [],
-      savings: o.savings && typeof o.savings === 'object' && !Array.isArray(o.savings) ? o.savings : {},
-      startWeek: typeof o.startWeek === 'string' ? o.startWeek : '',
-      tab: CATS_TABS.indexOf(o.tab) >= 0 ? o.tab : 'home',
-      tipSeen: o.tipSeen === true,
-      lastCat: CATS[o.lastCat] ? o.lastCat : ''
+      list: list,
+      over: Math.max(0, round2(fixedTotal - giftsAmount)),
+      spare: flex.length ? 0 : Math.max(0, pool)
     };
   }
 
-  function saveWallet() {
-    if (unlocked) writeKey(WALLET_KEY, wallet);
-  }
-
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-  }
-
-  function personById(id) {
-    for (var i = 0; i < wallet.people.length; i++) if (wallet.people[i].id === id) return wallet.people[i];
-    return null;
-  }
-
-  function sum(list, fn) {
-    return list.reduce(function (t, x) { return t + (fn ? fn(x) : x); }, 0);
-  }
-
-  function spentIn(cat) {
-    return sum(wallet.entries.filter(function (e) { return e.category === cat; }), function (e) { return e.amount; });
-  }
-
-  function personSpent(id) {
-    return sum(wallet.entries.filter(function (e) { return e.category === 'gifts' && e.personId === id; }), function (e) { return e.amount; });
-  }
-
-  // Calm progress state shared by categories and people
-  function softState(spent, amount) {
-    var left = amount - spent;
-    var pct = amount > 0 ? spent / amount : (spent > 0 ? 2 : 0);
-    if (Math.round(-left * 100) > 0) return { text: money(-left) + ' over', over: true, pct: 1 };
-    if (pct >= 0.8 && spent > 0) return { text: 'Nearly there, ' + money(left) + ' left', over: false, pct: pct };
-    return { text: money(left) + ' left', over: false, pct: pct };
-  }
-
-  function meter(pct, cls) {
-    return '<div class="meter"><div class="' + cls + '" style="width:' + Math.min(100, pct * 100).toFixed(1) + '%"></div></div>';
-  }
-
-  function catAmount(cat) {
-    return plan[cat];
-  }
-
-  // Weeks from the plan's first week to the week of 25 December
-  function savingWeeks() {
-    var now = new Date();
+  // The whole plan from the answers. Pure: same answers and date give the same plan.
+  function buildPlan(a, now) {
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var xmas = new Date(today.getFullYear(), 11, 25);
-    var lastMon = monday(xmas), thisMon = monday(today);
-    var done = today > xmas;
-    var start = wallet.startWeek ? fromIso(wallet.startWeek) : null;
-    if (!start || start > lastMon || (lastMon - start) / 86400000 > 7 * 29) {
-      start = thisMon > lastMon ? lastMon : thisMon;
-      wallet.startWeek = iso(start);
-      saveWallet();
-    }
-    var weeks = [];
-    for (var d = start; d <= lastMon; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 7)) {
-      var key = iso(d);
-      var actual = wallet.savings[key];
-      weeks.push({
-        key: key, date: d,
-        past: done || d < thisMon,
-        current: !done && key === iso(thisMon),
-        actual: typeof actual === 'number' && isFinite(actual) ? actual : null
-      });
-    }
-    weeks.done = done;
-    return weeks;
-  }
+    var year = today > new Date(today.getFullYear(), 11, 25) ? today.getFullYear() + 1 : today.getFullYear();
+    var days = paydays(fromIso(a.nextPayday), a.freq, today, new Date(year, 11, 24));
+    var n = days.length;
+    var neededForTarget = perPayday(a.target - a.saved, n);
 
-  function savingState() {
-    var weeks = savingWeeks();
-    var actualSum = sum(weeks, function (w) { return w.actual || 0; });
-    var soFar = plan.saved + actualSum;
-    var remaining = Math.max(0, plan.budget - soFar);
-    var open = weeks.filter(function (w) { return w.actual === null && !w.past; });
-    var target = open.length ? Math.max(0, Math.round(remaining / open.length)) : 0;
-    var flat = weeks.length ? Math.max(0, plan.budget - plan.saved) / weeks.length : 0;
-    var due = weeks.filter(function (w) { return w.past || (w.current && w.actual !== null); }).length;
+    var budget = a.target, notice = '', spare = 0;
+    if (!n) {
+      budget = a.saved;
+      notice = "Your next payday is after Christmas Eve, so there's nothing to schedule. Here's your plan for the amount you have saved.";
+    } else if (a.setAside != null) {
+      var reachable = round2(a.saved + a.setAside * n);
+      if (reachable < a.target) {
+        budget = reachable;
+        notice = 'Your target is ' + money(a.target) + '. ' + money(a.setAside) + ' a payday gets you to ' + money(reachable) +
+          ' by Christmas Eve. To reach ' + money(a.target) + " you'd need " + money(neededForTarget) + ' a payday.';
+      } else {
+        spare = round2(reachable - a.target);
+      }
+    }
+
+    var toSave = round2(Math.max(0, budget - a.saved));
+    var step = perPayday(toSave, n), left = toSave, running = a.saved;
+    var schedule = days.map(function (d) {
+      var amt = Math.min(step, left);
+      left = round2(left - amt);
+      running = round2(running + amt);
+      return { date: d, amount: amt, running: running };
+    });
+
+    var bBudget = round2(budget * PLAN_B);
+    var bStep = perPayday(bBudget - a.saved, n);
     return {
-      weeks: weeks, soFar: soFar, remaining: remaining, target: target,
-      targetToDate: plan.saved + flat * due,
-      sorted: plan.budget > 0 && remaining === 0
+      year: year, freq: a.freq, target: a.target, saved: a.saved,
+      budget: budget, notice: notice, spare: spare,
+      split: splitOf(budget),
+      gifts: allocateGifts(a.people, splitOf(budget).gifts),
+      paydays: n, perPayday: step, toSave: toSave, schedule: schedule,
+      planB: { budget: bBudget, split: splitOf(bBudget), perPayday: bStep, less: round2(budget - bBudget), lessPerPayday: step - bStep }
     };
   }
 
-  // ---- Rendering ----
+  // ---- Christmas Plan Builder: form ----
+  var answers = { freq: 'weekly' };
+  var targetEdited = false, savedEdited = false, lastPlan = null, rowId = 0;
+
+  function addPersonRow(values) {
+    var id = ++rowId, v = values || {};
+    var row = document.createElement('div');
+    row.className = 'person-row';
+    row.innerHTML =
+      '<div class="pr-name"><label for="pn' + id + '">Name</label><input id="pn' + id + '" type="text" maxlength="60" autocomplete="off" data-k="name"></div>' +
+      '<div><label for="pr' + id + '">Relationship</label><select id="pr' + id + '" data-k="rel">' +
+        Object.keys(WEIGHTS).map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
+      '<div><label for="pd' + id + '">Already decided (€)</label><input id="pd' + id + '" type="text" inputmode="decimal" autocomplete="off" placeholder="Optional" data-k="decided"></div>' +
+      '<button type="button" class="btn small" data-remove>Remove</button>';
+    row.querySelector('[data-k=name]').value = v.name || '';
+    row.querySelector('[data-k=rel]').value = v.rel || 'Partner';
+    row.querySelector('[data-k=decided]').value = v.decided != null ? v.decided : '';
+    row.querySelector('[data-remove]').addEventListener('click', function () { row.remove(); });
+    $('qPeople').append(row);
+    return row;
+  }
+
+  function showErr(id, text) {
+    $(id).textContent = text || '';
+    $(id).hidden = !text;
+  }
+
+  function readAnswers() {
+    var ok = true, focus = null;
+    var target = parseAmount($('qTarget').value);
+    var saved = $('qSaved').value.trim() === '' ? 0 : parseAmount($('qSaved').value);
+    var aside = $('qAside').value.trim() === '' ? null : parseAmount($('qAside').value);
+    if (!(target > 0)) { showErr('eTarget', 'Put in a target above €0.'); ok = false; focus = focus || 'qTarget'; }
+    else if (!(saved >= 0)) { showErr('eTarget', 'Already saved needs to be an amount in euro, or leave it blank.'); ok = false; focus = focus || 'qSaved'; }
+    else showErr('eTarget');
+    if (!$('qPayday').value) { showErr('ePayday', 'Pick the date of your next payday.'); ok = false; focus = focus || 'qPayday'; }
+    else showErr('ePayday');
+    if (aside !== null && !(aside >= 0)) { showErr('eAside', 'Put in an amount in euro, or leave it blank.'); ok = false; focus = focus || 'qAside'; }
+    else showErr('eAside');
+
+    var people = [], badDecided = false;
+    $('qPeople').querySelectorAll('.person-row').forEach(function (row) {
+      var name = row.querySelector('[data-k=name]').value.trim();
+      var d = row.querySelector('[data-k=decided]').value.trim();
+      var decided = d === '' ? null : parseAmount(d);
+      if (!name) return;
+      if (decided !== null && !(decided >= 0)) badDecided = true;
+      people.push({ name: name, rel: row.querySelector('[data-k=rel]').value, decided: decided });
+    });
+    if (!people.length) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
+    else if (badDecided) { showErr('ePeople', '"Already decided" needs to be an amount in euro, or left blank.'); ok = false; focus = focus || 'qPeople'; }
+    else showErr('ePeople');
+
+    if (!ok) {
+      var el = focus === 'qPeople' ? $('qPeople').querySelector('input') : $(focus);
+      if (el) el.focus();
+      return null;
+    }
+    return { target: target, saved: saved, freq: answers.freq, nextPayday: $('qPayday').value, setAside: aside, people: people };
+  }
+
+  // ---- Christmas Plan Builder: output ----
+  var LOGO = '<svg class="plan-logo" viewBox="0 0 1000 1000" aria-hidden="true"><circle class="bg" cx="500" cy="500" r="500" fill="#e8541e"/>' +
+    '<g transform="rotate(-18 500 500)"><path d="M250 330 H620 L790 500 L620 670 H250 Q210 670 210 630 V370 Q210 330 250 330 Z" fill="#fff6e9"/>' +
+    '<circle class="hole" cx="700" cy="500" r="30" fill="#e8541e"/><text x="425" y="600" font-family="Arial, sans-serif" font-weight="900" font-size="270" text-anchor="middle" fill="#e8541e">€</text></g></svg>';
+
+  function splitHtml(split) {
+    return '<ul class="plan-list">' + Object.keys(LABELS).map(function (k) {
+      return '<li><span class="who">' + esc(LABELS[k]) + '</span><span class="amt">' + money(split[k]) + '</span></li>';
+    }).join('') + '</ul>';
+  }
+
+  function renderPlan(p) {
+    var h = [];
+    h.push('<div class="plan-head">' + LOGO + '<div><p class="plan-year">CHRISTMAS ' + p.year + '</p><h3>Your Christmas plan</h3></div></div>');
+    h.push('<p class="plan-budget">Plan budget <strong>' + money(p.budget) + '</strong></p>');
+
+    h.push('<h4>Where it goes</h4><div class="bar" aria-hidden="true">' + Object.keys(SPLIT_PCT).map(function (k) {
+      return '<div class="' + k + '" style="width:' + SPLIT_PCT[k] + '%"></div>';
+    }).join('') + '</div><ul class="legend">' + Object.keys(LABELS).map(function (k) {
+      return '<li><span class="sw ' + k + '"></span><span>' + esc(LABELS[k]) + ' (' + SPLIT_PCT[k] + '%)</span><span class="amt">' + money(p.split[k]) + '</span></li>';
+    }).join('') + '</ul>');
+
+    h.push('<h4>Gifts</h4><ul class="plan-list">' + p.gifts.list.map(function (g) {
+      return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
+    }).join('') + '</ul>');
+    if (p.gifts.over) h.push('<p class="plan-msg">Your decided amounts are ' + money(p.gifts.over) + ' over the gifts share. Move money from Extras or lower one.</p>');
+    if (p.gifts.spare) h.push('<p class="plan-msg">' + money(p.gifts.spare) + ' of the gifts share is still free.</p>');
+
+    h.push('<h4>Put it aside</h4>');
+    if (!p.paydays) {
+      h.push('<p class="plan-msg">No paydays before Christmas Eve, so the plan uses the ' + money(p.saved) + ' you have saved.</p>');
+    } else if (!p.toSave) {
+      h.push("<p class=\"plan-msg\">You've saved enough already. Nothing more to put aside.</p>");
+    } else {
+      h.push('<p class="plan-msg" style="margin:0 0 8px">Starting from ' + money(p.saved) + ' saved.</p>');
+      h.push('<table class="sched"><thead><tr><th>Payday</th><th class="num">Put aside</th><th class="num">Total</th></tr></thead><tbody>' +
+        p.schedule.map(function (r) {
+          return '<tr><td>' + esc(dayLabel(r.date)) + '</td><td class="num">' + money(r.amount) + '</td><td class="num">' + money(r.running) + '</td></tr>';
+        }).join('') + '</tbody></table>');
+    }
+
+    var b = p.planB;
+    h.push('<h4>If money is tight</h4>');
+    h.push('<p class="plan-msg" style="margin:0 0 6px">Plan B at 80%: <strong>' + money(b.budget) + '</strong>, ' + money(b.less) + ' less than the main plan.</p>');
+    h.push(splitHtml(b.split));
+    if (p.paydays) {
+      h.push('<p class="plan-msg">' + money(b.perPayday) + ' a payday' + (b.lessPerPayday > 0 ? ', ' + money(b.lessPerPayday) + ' less each time.' : '.') + '</p>');
+    }
+
+    h.push('<p class="fine">Our split and gift weights are rule-of-thumb starting points, not surveyed figures. For information, not financial advice. whatitcosts.ie</p>');
+    $('planCard').innerHTML = h.join('');
+
+    var r = [];
+    if (p.notice) r.push('<p>' + esc(p.notice) + '</p>');
+    if (p.spare) r.push("<p>You'd reach your target with " + money(p.spare) + ' to spare.</p>');
+    $('reality').innerHTML = r.join('');
+    $('reality').hidden = !r.length;
+  }
+
+  function planText(p) {
+    var t = ['Your Christmas plan ' + p.year, 'Plan budget: ' + money(p.budget), '', 'Where it goes'];
+    Object.keys(LABELS).forEach(function (k) { t.push(LABELS[k] + ': ' + money(p.split[k])); });
+    t.push('', 'Gifts');
+    p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
+    if (p.gifts.over) t.push('Decided amounts are ' + money(p.gifts.over) + ' over the gifts share.');
+    t.push('', 'Put it aside');
+    if (!p.paydays) t.push('No paydays before Christmas Eve. Plan uses the ' + money(p.saved) + ' saved.');
+    else if (!p.toSave) t.push("Saved enough already.");
+    else {
+      t.push('Starting from ' + money(p.saved) + ' saved');
+      p.schedule.forEach(function (r) { t.push(dayLabel(r.date) + ': ' + money(r.amount) + ' (total ' + money(r.running) + ')'); });
+    }
+    var b = p.planB;
+    t.push('', 'If money is tight (80%)', 'Budget ' + money(b.budget) + ': gifts ' + money(b.split.gifts) + ', food & drink ' + money(b.split.food) + ', extras ' + money(b.split.extras));
+    if (p.paydays) t.push(money(b.perPayday) + ' a payday, ' + money(b.less) + ' less overall');
+    t.push('', 'Rule-of-thumb starting points, not surveyed figures. For information, not financial advice. whatitcosts.ie');
+    return t.join('\n');
+  }
+
+  function flash(text) {
+    $('copyMsg').textContent = text;
+    setTimeout(function () { if ($('copyMsg').textContent === text) $('copyMsg').textContent = ''; }, 3000);
+  }
+
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.append(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    return ok;
+  }
+
+  function copyText(text) {
+    var fail = function () { flash(legacyCopy(text) ? 'Copied' : "Couldn't copy here. Try a screenshot instead."); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { flash('Copied'); }, fail);
+    } else {
+      fail();
+    }
+  }
+
+  document.querySelectorAll('.choice').forEach(function (b) {
+    b.addEventListener('click', function () {
+      answers.freq = b.dataset.freq;
+      document.querySelectorAll('.choice').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    });
+  });
+  $('qTarget').addEventListener('input', function () { targetEdited = true; });
+  $('qSaved').addEventListener('input', function () { savedEdited = true; });
+  $('addPerson').addEventListener('click', function () { addPersonRow().querySelector('input').focus(); });
+
+  $('planForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var a = readAnswers();
+    if (!a) return;
+    lastPlan = buildPlan(a, new Date());
+    renderPlan(lastPlan);
+    $('planOut').hidden = false;
+    $('copyMsg').textContent = '';
+    $('planOut').scrollIntoView({ block: 'start' });
+  });
+
+  $('shareBtn').addEventListener('click', function () {
+    if (!lastPlan) return;
+    var text = planText(lastPlan);
+    if (navigator.share) navigator.share({ title: 'Your Christmas plan', text: text }).catch(function () {});
+    else copyText(text);
+  });
+  $('copyBtn').addEventListener('click', function () { if (lastPlan) copyText(planText(lastPlan)); });
+  $('printBtn').addEventListener('click', function () { window.print(); });
+  $('editBtn').addEventListener('click', function () {
+    $('planForm').scrollIntoView({ block: 'start' });
+    $('qTarget').focus({ preventScroll: true });
+  });
+
   function render() {
     if (!unlocked) return;
-    $('noBudget').hidden = plan.budget > 0;
-    $('tip').hidden = wallet.tipSeen;
-    renderTabs();
-    renderHome();
-    renderAddFor();
-    renderGifts();
-    renderSaving();
+    if (!targetEdited) $('qTarget').value = plan.budget > 0 ? String(Math.round(plan.budget * 100) / 100) : '';
+    if (!savedEdited) $('qSaved').value = plan.saved > 0 ? String(plan.saved) : '';
   }
-
-  function renderTabs() {
-    CATS_TABS.forEach(function (t) {
-      $('tab-' + t).setAttribute('aria-selected', String(wallet.tab === t));
-      $('panel-' + t).hidden = wallet.tab !== t;
-    });
-  }
-
-  function entryHtml(e) {
-    var p = e.personId ? personById(e.personId) : null;
-    var meta = [CATS[e.category], shortDate(fromIso(e.date))];
-    if (e.category === 'gifts') meta.push(p ? 'for ' + p.name : 'Not assigned');
-    if (e.note) meta.push(e.note);
-    if (ui.editEntry === e.id) {
-      return '<li class="entry"><div class="edit-grid">' +
-        '<div><label for="ea-' + e.id + '">Amount (€)</label><input id="ea-' + e.id + '" type="text" inputmode="decimal" value="' + esc(e.amount) + '"></div>' +
-        '<div><label for="en-' + e.id + '">Note</label><input id="en-' + e.id + '" type="text" maxlength="80" value="' + esc(e.note || '') + '"></div>' +
-        '</div><p class="warn" id="ee-' + e.id + '" hidden></p><div class="form-btns">' +
-        '<button type="button" class="btn primary" data-action="save-entry" data-id="' + e.id + '">Save</button>' +
-        '<button type="button" class="btn small" data-action="cancel-entry">Cancel</button></div></li>';
-    }
-    return '<li class="entry"><div class="entry-row"><div class="entry-main"><span class="entry-amt">' + money(e.amount) + '</span>' +
-      '<span class="entry-meta">' + esc(meta.join(' · ')) + '</span></div><div class="entry-btns">' +
-      '<button type="button" class="btn small" data-action="edit-entry" data-id="' + e.id + '" aria-label="Edit ' + esc(money(e.amount) + ' ' + CATS[e.category]) + '">Edit</button>' +
-      '<button type="button" class="btn small" data-action="del-entry" data-id="' + e.id + '" aria-label="Delete ' + esc(money(e.amount) + ' ' + CATS[e.category]) + '">Delete</button>' +
-      '</div></div></li>';
-  }
-
-  function renderHome() {
-    var total = sum(wallet.entries, function (e) { return e.amount; });
-    var left = plan.budget - total;
-    $('hLeft').textContent = Math.round(left * 100) < 0 ? money(-left) + ' over' : money(left);
-    $('hOf').textContent = 'of ' + money(plan.budget) + ' budget';
-
-    var now = new Date();
-    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var xmas = new Date(today.getFullYear(), 11, 25);
-    var days = Math.round((xmas - today) / 86400000);
-    if (days < 0) {
-      var d = plan.budget - total, tail;
-      if (Math.round(d * 100) > 0) tail = " That's " + money(d) + ' under your budget.';
-      else if (Math.round(d * 100) < 0) tail = " That's " + money(-d) + ' over your budget.';
-      else tail = ' Right on budget.';
-      $('hDays').textContent = 'Christmas is done. You spent ' + money(total) + ' of ' + money(plan.budget) + '.' + tail;
-    } else {
-      $('hDays').textContent = days === 0 ? "It's Christmas Day." : days + (days === 1 ? ' day' : ' days') + ' to Christmas';
-    }
-
-    $('hCats').innerHTML = Object.keys(CATS).map(function (c) {
-      var spent = spentIn(c), amt = catAmount(c), s = softState(spent, amt);
-      return '<div class="cat"><div class="cat-top"><span>' + CATS[c] + '</span><span class="cat-state' + (s.over ? ' over' : '') + '">' + s.text + '</span></div>' +
-        meter(s.pct, c) + '<div class="cat-sub">' + money(spent) + ' of ' + money(amt) + '</div></div>';
-    }).join('');
-
-    var st = savingState();
-    var cur = st.weeks.filter(function (w) { return w.current; })[0];
-    $('hWeekCard').hidden = !cur;
-    if (cur) {
-      $('hWeek').textContent = st.sorted && cur.actual === null ? "Sorted. You've saved your full budget."
-        : cur.actual !== null ? 'Marked saved: ' + money(cur.actual) + ' this week.'
-        : 'Target ' + money(st.target) + '. Not marked yet.';
-    }
-
-    var list = wallet.entries.slice().reverse();
-    var shown = ui.showAll ? list : list.slice(0, 5);
-    $('hEntriesTitle').textContent = ui.showAll ? 'All spending' : 'Recent spending';
-    $('hEntries').innerHTML = shown.length ? shown.map(entryHtml).join('')
-      : '<li class="entry muted">Nothing logged yet. Use Add to log what you spend.</li>';
-    $('seeAll').hidden = list.length <= 5;
-    $('seeAll').textContent = ui.showAll ? 'Show recent' : 'See all (' + list.length + ')';
-  }
-
-  function renderAddFor() {
-    var sel = $('addFor'), cur = sel.value;
-    sel.innerHTML = '<option value="">Not assigned</option>' + wallet.people.map(function (p) {
-      return '<option value="' + esc(p.id) + '">' + esc(p.name) + '</option>';
-    }).join('');
-    if (personById(cur)) sel.value = cur;
-    document.querySelectorAll('.cat-btn').forEach(function (b) {
-      b.setAttribute('aria-pressed', String(b.dataset.cat === wallet.lastCat));
-    });
-    $('forWrap').hidden = !(wallet.lastCat === 'gifts' && wallet.people.length);
-  }
-
-  function renderGifts() {
-    var limits = sum(wallet.people, function (p) { return p.limit || 0; });
-    var diff = plan.gifts - limits;
-    $('gLimits').textContent = money(limits);
-    $('gAmt').textContent = money(plan.gifts);
-    $('gDiffLabel').textContent = Math.round(diff * 100) < 0 ? 'Limits over' : 'Spare';
-    $('gDiff').textContent = money(diff);
-    $('gOver').hidden = !(Math.round(-diff * 100) > 0);
-    $('gOver').textContent = 'Your limits add up to ' + money(-diff) + ' more than your gifts amount.';
-    var unassigned = sum(wallet.entries.filter(function (e) { return e.category === 'gifts' && !personById(e.personId); }), function (e) { return e.amount; });
-    $('gUnassigned').hidden = !(unassigned > 0);
-    $('gUnassigned').textContent = 'Unassigned gift spending: ' + money(unassigned);
-    $('gPlanned').hidden = !(plan.people > 0);
-    $('gPlanned').textContent = 'You planned for ' + plan.people + (plan.people === 1 ? ' person' : ' people') + '. ' + wallet.people.length + ' added so far.';
-    $('evenBtn').hidden = !wallet.people.length;
-
-    $('gPeople').innerHTML = wallet.people.map(function (p) {
-      if (ui.editPerson === p.id) {
-        return '<section class="card person-form"><div class="row">' +
-          '<div><label for="pn-' + p.id + '">Name</label><input id="pn-' + p.id + '" type="text" maxlength="60" value="' + esc(p.name) + '"></div>' +
-          '<div><label for="pl-' + p.id + '">Limit (€)</label><input id="pl-' + p.id + '" type="text" inputmode="decimal" value="' + esc(p.limit || '') + '"></div>' +
-          '</div><p class="warn" id="pe-' + p.id + '" hidden></p><div class="form-btns">' +
-          '<button type="button" class="btn primary" data-action="save-person" data-id="' + p.id + '">Save</button>' +
-          '<button type="button" class="btn small" data-action="cancel-person">Cancel</button></div></section>';
-      }
-      var spent = personSpent(p.id), s = softState(spent, p.limit || 0);
-      var state = p.limit ? s.text : 'No limit set';
-      return '<section class="card"><div class="person-head"><h3>' + esc(p.name) + '</h3>' +
-        '<span class="cat-state' + (s.over && p.limit ? ' over' : '') + '">' + state + '</span></div>' +
-        (p.limit ? meter(s.pct, 'gifts') : '') +
-        '<p class="person-stats">Limit ' + (p.limit ? money(p.limit) : 'not set') + ' · Spent ' + money(spent) +
-        (p.limit && !s.over ? ' · ' + money(p.limit - spent) + ' left' : '') + '</p>' +
-        (s.over && p.limit ? '<p class="note">' + money(spent - p.limit) + ' over. Trim another gift or use Extras.</p>' : '') +
-        '<div class="form-btns" style="margin-top:12px">' +
-        '<button type="button" class="btn small" data-action="edit-person" data-id="' + p.id + '" aria-label="Edit ' + esc(p.name) + '">Edit</button>' +
-        '<button type="button" class="btn small" data-action="del-person" data-id="' + p.id + '" aria-label="Remove ' + esc(p.name) + '">Remove</button>' +
-        '</div></section>';
-    }).join('');
-  }
-
-  function renderSaving() {
-    var st = savingState();
-    $('sSoFar').textContent = money(st.soFar);
-    $('sOf').textContent = 'of ' + money(plan.budget) + ' budget';
-    var diff = Math.round(st.soFar - st.targetToDate);
-    $('sStatus').textContent = st.weeks.done ? 'Christmas is done. You put aside ' + money(st.soFar) + ' for it.'
-      : st.sorted ? "Sorted. You've saved your full budget."
-      : diff > 0 ? money(diff) + ' ahead' : diff < 0 ? money(-diff) + ' to catch up' : 'On track';
-    $('sTarget').textContent = money(Math.round(st.targetToDate));
-    $('sActual').textContent = money(st.soFar);
-
-    $('sWeeks').innerHTML = st.weeks.map(function (w) {
-      var label = 'Week of ' + shortDate(w.date, true);
-      var head = '<span class="week-date">' + esc(shortDate(w.date, true)) +(w.current ? '<span class="tag">This week</span>' : '') + '</span>';
-      if (ui.editWeek === w.key) {
-        var pre = w.actual !== null ? w.actual : st.target;
-        return '<li class="week">' + head + '<div class="week-edit"><div><label for="wk-' + w.key + '">Amount saved (€)</label>' +
-          '<input id="wk-' + w.key + '" type="text" inputmode="decimal" value="' + esc(pre) + '"></div>' +
-          '<button type="button" class="btn primary" data-action="save-week" data-key="' + w.key + '">Save</button></div>' +
-          '<p class="warn" id="we-' + w.key + '" hidden></p><div class="form-btns" style="margin-top:8px">' +
-          '<button type="button" class="btn small" data-action="cancel-week">Cancel</button>' +
-          (w.actual !== null ? '<button type="button" class="btn small" data-action="unmark-week" data-key="' + w.key + '">Unmark</button>' : '') +
-          '</div></li>';
-      }
-      var sub, btn;
-      if (w.actual !== null) {
-        sub = 'Saved ' + money(w.actual);
-        btn = '<button type="button" class="btn small" data-action="mark-week" data-key="' + w.key + '" aria-label="Edit amount for ' + esc(label) + '">Edit</button>';
-      } else {
-        sub = w.past ? 'Not marked' : 'Target ' + money(st.target);
-        btn = '<button type="button" class="btn" data-action="mark-week" data-key="' + w.key + '" aria-label="Mark saved for ' + esc(label) + '">Mark saved</button>';
-      }
-      return '<li class="week"><div class="week-row"><div>' + head + '<span class="week-sub">' + sub + '</span></div>' + btn + '</div></li>';
-    }).join('');
-  }
-
-  // ---- Toast ----
-  function toast(text, undo) {
-    clearTimeout(toastTimer);
-    $('toastText').textContent = text;
-    $('toastUndo').hidden = !undo;
-    $('toast').hidden = false;
-    toastTimer = setTimeout(function () { $('toast').hidden = true; lastRemoved = null; }, undo ? 6000 : 3500);
-  }
-
-  $('toastUndo').addEventListener('click', function () {
-    if (lastRemoved) {
-      wallet.entries.splice(Math.min(lastRemoved.index, wallet.entries.length), 0, lastRemoved.entry);
-      lastRemoved = null;
-      saveWallet();
-      render();
-    }
-    $('toast').hidden = true;
-  });
-
-  // ---- Wallet actions ----
-  function setTab(t) {
-    wallet.tab = t;
-    saveWallet();
-    renderTabs();
-    if (t === 'add') $('addAmt').focus();
-    else $('walletTitle').scrollIntoView({ block: 'start' });
-  }
-
-  $('paid').addEventListener('click', function (ev) {
-    var t = ev.target.closest('[data-tab],[data-action]');
-    if (!t) return;
-    var id = t.dataset.id, key = t.dataset.key;
-    switch (t.dataset.action || 'tab') {
-      case 'tab': setTab(t.dataset.tab); return;
-      case 'tip-ok': wallet.tipSeen = true; break;
-      case 'toggle-all': ui.showAll = !ui.showAll; break;
-      case 'edit-entry': ui.editEntry = id; break;
-      case 'cancel-entry': ui.editEntry = null; break;
-      case 'save-entry': {
-        var amt = parseAmount($('ea-' + id).value);
-        if (!(amt > 0)) { $('ee-' + id).textContent = 'Enter an amount above €0.'; $('ee-' + id).hidden = false; return; }
-        wallet.entries.forEach(function (e) {
-          if (e.id === id) { e.amount = amt; e.note = $('en-' + id).value.trim(); }
-        });
-        ui.editEntry = null;
-        break;
-      }
-      case 'del-entry': {
-        var i = wallet.entries.findIndex(function (e) { return e.id === id; });
-        if (i < 0) return;
-        lastRemoved = { entry: wallet.entries[i], index: i };
-        wallet.entries.splice(i, 1);
-        saveWallet();
-        render();
-        toast('Removed.', true);
-        return;
-      }
-      case 'edit-person': ui.editPerson = id; break;
-      case 'cancel-person': ui.editPerson = null; break;
-      case 'save-person': {
-        var name = $('pn-' + id).value.trim(), lim = $('pl-' + id).value.trim();
-        var limit = lim === '' ? 0 : parseAmount(lim);
-        if (!name) { $('pe-' + id).textContent = 'Add a name.'; $('pe-' + id).hidden = false; return; }
-        if (!(limit >= 0)) { $('pe-' + id).textContent = 'Enter a limit in euro, or leave it empty.'; $('pe-' + id).hidden = false; return; }
-        var p = personById(id);
-        if (p) { p.name = name; p.limit = limit; }
-        ui.editPerson = null;
-        break;
-      }
-      case 'del-person': {
-        var person = personById(id);
-        if (!person || !confirm('Remove ' + person.name + '? Their gifts stay in your totals as Not assigned.')) return;
-        wallet.people = wallet.people.filter(function (x) { return x.id !== id; });
-        wallet.entries.forEach(function (e) { if (e.personId === id) delete e.personId; });
-        break;
-      }
-      case 'even-split': {
-        if (!wallet.people.length) return;
-        var each = Math.round(plan.gifts / wallet.people.length);
-        if (!confirm('Set every limit to ' + money(each) + '?')) return;
-        wallet.people.forEach(function (x) { x.limit = each; });
-        break;
-      }
-      case 'mark-week': ui.editWeek = key; render(); var f = $('wk-' + key); if (f) { f.focus(); f.select(); } return;
-      case 'cancel-week': ui.editWeek = null; break;
-      case 'save-week': {
-        var v = parseAmount($('wk-' + key).value);
-        if (!(v >= 0)) { $('we-' + key).textContent = 'Enter an amount in euro.'; $('we-' + key).hidden = false; return; }
-        wallet.savings[key] = v;
-        ui.editWeek = null;
-        break;
-      }
-      case 'unmark-week': delete wallet.savings[key]; ui.editWeek = null; break;
-      case 'backup': downloadBackup(); return;
-      case 'clear': {
-        if (!confirm('Clear your plan? This removes your spending, people and savings from this device.')) return;
-        wallet.entries = []; wallet.people = []; wallet.savings = {}; wallet.startWeek = '';
-        ui.showAll = false; ui.editEntry = ui.editPerson = ui.editWeek = null;
-        break;
-      }
-      default: return;
-    }
-    saveWallet();
-    render();
-  });
-
-  document.querySelectorAll('.cat-btn').forEach(function (b) {
-    b.addEventListener('click', function () {
-      wallet.lastCat = b.dataset.cat;
-      $('addErr').hidden = true;
-      saveWallet();
-      renderAddFor();
-    });
-  });
-
-  $('addForm').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var err = $('addErr');
-    var amt = parseAmount($('addAmt').value);
-    if (!(amt > 0)) { err.textContent = 'Enter an amount above €0.'; err.hidden = false; $('addAmt').focus(); return; }
-    if (!CATS[wallet.lastCat]) { err.textContent = 'Pick a category for this one.'; err.hidden = false; return; }
-    err.hidden = true;
-    var entry = { id: uid(), date: iso(new Date()), amount: amt, category: wallet.lastCat, note: $('addNote').value.trim() };
-    if (entry.category === 'gifts' && personById($('addFor').value)) entry.personId = $('addFor').value;
-    wallet.entries.push(entry);
-    saveWallet();
-    render();
-    var left = catAmount(entry.category) - spentIn(entry.category);
-    toast('Added ' + money(amt) + '. ' + (Math.round(left * 100) < 0
-      ? money(-left) + ' over your ' + CATS[entry.category] + ' amount.'
-      : money(left) + ' left in ' + CATS[entry.category] + '.'));
-    $('addAmt').value = '';
-    $('addNote').value = '';
-    $('addAmt').focus();
-  });
-
-  $('personForm').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var err = $('pErr'), name = $('pName').value.trim(), lim = $('pLimit').value.trim();
-    var limit = lim === '' ? 0 : parseAmount(lim);
-    if (!name) { err.textContent = 'Add a name.'; err.hidden = false; $('pName').focus(); return; }
-    if (!(limit >= 0)) { err.textContent = 'Enter a limit in euro, or leave it empty.'; err.hidden = false; return; }
-    err.hidden = true;
-    wallet.people.push({ id: uid(), name: name, limit: limit });
-    $('pName').value = '';
-    $('pLimit').value = '';
-    saveWallet();
-    render();
-    $('pName').focus();
-  });
-
-  // ---- Backup ----
-  function downloadBackup() {
-    var fields = {};
-    FIELD_IDS.forEach(function (id) { fields[id] = $(id).value; });
-    var data = {
-      app: 'whatitcosts', version: 3,
-      mode: modeWeeklyEl.checked ? 'weekly' : 'budget', fields: fields,
-      entries: wallet.entries, people: wallet.people, savings: wallet.savings, startWeek: wallet.startWeek
-    };
-    var url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'whatitcosts-backup.json';
-    document.body.append(a);
-    a.click();
-    a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-  }
-
-  function validBackup(o) {
-    if (!o || typeof o !== 'object' || o.app !== 'whatitcosts') return false;
-    if (!Array.isArray(o.entries) || !Array.isArray(o.people)) return false;
-    if (!o.savings || typeof o.savings !== 'object' || Array.isArray(o.savings)) return false;
-    var okEntries = o.entries.every(function (e) {
-      return e && typeof e.id === 'string' && typeof e.amount === 'number' && e.amount > 0 &&
-        CATS[e.category] && /^\d{4}-\d{2}-\d{2}$/.test(e.date);
-    });
-    var okPeople = o.people.every(function (p) {
-      return p && typeof p.id === 'string' && typeof p.name === 'string' && typeof p.limit === 'number' && p.limit >= 0;
-    });
-    var okSavings = Object.keys(o.savings).every(function (k) {
-      return /^\d{4}-\d{2}-\d{2}$/.test(k) && typeof o.savings[k] === 'number' && o.savings[k] >= 0;
-    });
-    return okEntries && okPeople && okSavings;
-  }
-
-  $('restoreFile').addEventListener('change', function () {
-    var file = this.files && this.files[0], input = this, msg = $('planMsg');
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function () {
-      var o = null;
-      try { o = JSON.parse(reader.result); } catch (e) {}
-      input.value = '';
-      if (!validBackup(o)) {
-        msg.textContent = "That file doesn't look like a whatitcosts backup. Your plan hasn't changed.";
-        msg.hidden = false;
-        return;
-      }
-      if (!confirm('Replace your current plan with this backup?')) return;
-      msg.hidden = true;
-      if (o.fields) FIELD_IDS.forEach(function (id) { if (typeof o.fields[id] === 'string') $(id).value = o.fields[id]; });
-      if (o.mode === 'weekly') modeWeeklyEl.checked = true; else $('modeBudget').checked = true;
-      var tab = wallet.tab, tipSeen = wallet.tipSeen, lastCat = wallet.lastCat;
-      wallet = loadWallet(o);
-      wallet.tab = tab; wallet.tipSeen = tipSeen; wallet.lastCat = lastCat;
-      ui.editEntry = ui.editPerson = ui.editWeek = null;
-      saveWallet();
-      update();
-      toast('Backup restored.');
-    };
-    reader.readAsText(file);
-  });
 
   function persist() {
-    if (!unlocked) return;
-    var fields = {};
-    FIELD_IDS.forEach(function (id) { fields[id] = $(id).value; });
-    writeKey(STORE_KEY, {
-      unlocked: true,
-      mode: modeWeeklyEl.checked ? 'weekly' : 'budget',
-      fields: fields
-    });
+    if (unlocked) writeKey(STORE_KEY, { unlocked: true });
   }
 
   function renderLock() {
     var live = !!PAY_URL;
     $('lockCard').hidden = unlocked;
     $('paid').hidden = !unlocked;
-    document.body.classList.toggle('has-tabbar', unlocked);
     $('lockTitle').textContent = live ? 'Full planner, €3. One payment, yours for this Christmas.' : 'Full planner, €3, coming soon';
     $('soonBtn').hidden = live;
     $('buyWrap').hidden = !live;
@@ -1109,11 +829,7 @@
     $('weekCard').hidden = weeklyMode;
 
     var budget = weeklyMode ? num(weeklyEl) * weeks + saved : num(budgetEl);
-
-    var g = num(giftsEl), f = num(foodEl);
-    var x = Math.max(0, 100 - g - f);
-    var b100 = Math.round(budget * 100) / 100;
-    plan = { budget: b100, saved: saved, people: people, gifts: b100 * g / 100, food: b100 * f / 100, extras: b100 * x / 100 };
+    plan = { budget: budget, saved: saved };
 
     $('results').hidden = !(budget > 0);
     if (!(budget > 0)) { persist(); render(); return; }
@@ -1156,6 +872,8 @@
     }
 
     // c) Editable split; extras is whatever is left, never below 0
+    var g = num(giftsEl), f = num(foodEl);
+    var x = Math.max(0, 100 - g - f);
     var scale = Math.max(100, g + f);
     $('splitWarn').hidden = g + f <= 100;
     $('barGifts').style.width = (g / scale * 100) + '%';
@@ -1178,13 +896,6 @@
 
     persist();
     render();
-  }
-
-  // Restore saved free-tool inputs
-  if (unlocked) {
-    var f0 = stored.fields || {};
-    FIELD_IDS.forEach(function (id) { if (f0[id] != null) $(id).value = f0[id]; });
-    if (stored.mode === 'weekly') modeWeeklyEl.checked = true;
   }
 
   $('unlockForm').addEventListener('submit', function (e) {
@@ -1210,6 +921,7 @@
   });
   $('modeBudget').addEventListener('change', update);
   modeWeeklyEl.addEventListener('change', update);
+  addPersonRow();
   renderLock();
   update();
 })();
