@@ -178,6 +178,7 @@
   .person-row .pr-name { grid-column: 1 / -1; }
   .person-row label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
   .person-row input, .person-row select { font-size: 17px; padding: 10px 12px; }
+  .person-row select[aria-invalid="true"] { border-color: var(--accent-ink); }
   .person-row .btn { grid-column: 1 / -1; justify-self: start; }
   .note {
     margin: 0 0 16px; padding: 12px 14px; border-radius: 12px;
@@ -720,12 +721,16 @@
     row.className = 'person-row';
     row.innerHTML =
       '<div class="pr-name"><label for="pn' + id + '">Name</label><input id="pn' + id + '" type="text" maxlength="60" autocomplete="off" data-k="name"></div>' +
-      '<div><label for="pr' + id + '">Relationship</label><select id="pr' + id + '" data-k="rel">' +
+      '<div><label for="pr' + id + '">Relationship</label><select id="pr' + id + '" data-k="rel"><option value="">Choose…</option>' +
         Object.keys(WEIGHTS).map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
       '<div><label for="pd' + id + '">Already decided (€, optional)</label><input id="pd' + id + '" type="text" inputmode="decimal" autocomplete="off" data-k="decided"></div>' +
       '<button type="button" class="btn small" data-remove>Remove person</button>';
     row.querySelector('[data-k=name]').value = v.name || '';
-    row.querySelector('[data-k=rel]').value = v.rel || 'Partner';
+    var rel = row.querySelector('[data-k=rel]');
+    rel.value = WEIGHTS[v.rel] ? v.rel : '';
+    rel.addEventListener('change', function () {
+      if (rel.value) { rel.removeAttribute('aria-invalid'); rel.removeAttribute('aria-describedby'); }
+    });
     row.querySelector('[data-k=decided]').value = v.decided != null ? v.decided : '';
     row.querySelector('[data-remove]').addEventListener('click', function () { row.remove(); });
     $('qPeople').append(row);
@@ -751,22 +756,29 @@
     if (aside !== null && !(aside >= 0)) { showErr('eAside', 'Put in an amount in euro, or leave it blank.'); ok = false; focus = focus || 'qAside'; }
     else showErr('eAside');
 
-    var people = [], badDecided = false, unnamedAmount = false;
+    var people = [], badDecided = false, unnamedAmount = false, noRel = null;
     $('qPeople').querySelectorAll('.person-row').forEach(function (row) {
       var name = row.querySelector('[data-k=name]').value.trim();
       var d = row.querySelector('[data-k=decided]').value.trim();
+      var relEl = row.querySelector('[data-k=rel]');
       var decided = d === '' ? null : parseAmount(d);
-      if (!name) { if (d !== '') unnamedAmount = true; return; }
+      var missing = (name || d !== '') && !relEl.value;
+      relEl.setAttribute('aria-invalid', String(missing));
+      if (missing) relEl.setAttribute('aria-describedby', 'ePeople');
+      else relEl.removeAttribute('aria-describedby');
+      if (missing && !noRel) noRel = relEl;
+      if (!name) { if (d !== '' && !unnamedAmount) unnamedAmount = row.querySelector('[data-k=name]'); return; }
       if (decided !== null && !(decided >= 0)) badDecided = true;
-      people.push({ name: name, rel: row.querySelector('[data-k=rel]').value, decided: decided });
+      people.push({ name: name, rel: relEl.value, decided: decided });
     });
-    if (!people.length && st.pct.gifts > 0) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
-    else if (unnamedAmount) { showErr('ePeople', 'Add a name for each person you have put an amount in for.'); ok = false; focus = focus || 'qPeople'; }
+    if (noRel) { showErr('ePeople', 'Choose a relationship for each person.'); ok = false; focus = focus || noRel; }
+    else if (!people.length && st.pct.gifts > 0) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
+    else if (unnamedAmount) { showErr('ePeople', 'Add a name for each person you have put an amount in for.'); ok = false; focus = focus || unnamedAmount; }
     else if (badDecided) { showErr('ePeople', '"Already decided" needs to be an amount in euro, or left blank.'); ok = false; focus = focus || 'qPeople'; }
     else showErr('ePeople');
 
     if (!ok) {
-      var el = focus === 'qPeople' ? $('qPeople').querySelector('input') : $(focus);
+      var el = typeof focus !== 'string' ? focus : focus === 'qPeople' ? $('qPeople').querySelector('input') : $(focus);
       if (el) el.focus();
       return null;
     }
