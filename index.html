@@ -158,6 +158,10 @@
   .stack > * + * { margin-top: 18px; }
   .group { border: 0; padding: 0; margin-left: 0; margin-right: 0; min-width: 0; }
   .row.align-end { align-items: end; }
+  .row.three { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .split-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 10px; }
+  .split-total { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .btn[disabled] { opacity: 0.55; cursor: not-allowed; }
   .group legend { font-weight: 600; font-size: 15px; margin-bottom: 6px; padding: 0; }
   .help { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
   .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -304,17 +308,27 @@
 
       <section class="card">
         <h2>A starting split</h2>
-        <div class="row">
-          <div>
-            <label for="pctGifts">Gifts (%)</label>
-            <input id="pctGifts" type="number" inputmode="numeric" min="0" max="100" step="1" value="45">
+        <div data-split-editor>
+          <div class="row three align-end">
+            <div>
+              <label for="pctGifts">Gifts (%)</label>
+              <input id="pctGifts" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="gifts">
+            </div>
+            <div>
+              <label for="pctFood">Food &amp; drink (%)</label>
+              <input id="pctFood" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="food">
+            </div>
+            <div>
+              <label for="pctExtras">Extras (%)</label>
+              <input id="pctExtras" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="extras">
+            </div>
           </div>
-          <div>
-            <label for="pctFood">Food &amp; drink (%)</label>
-            <input id="pctFood" type="number" inputmode="numeric" min="0" max="100" step="1" value="40">
+          <div class="split-foot">
+            <p class="split-total" data-split-total></p>
+            <button type="button" class="btn small" data-split-reset>Reset to default (45/40/15)</button>
           </div>
+          <p class="warn" id="splitWarn" data-split-msg role="status" hidden></p>
         </div>
-        <p class="warn" id="splitWarn" hidden>These add up to more than 100%</p>
         <div class="bar" aria-hidden="true">
           <div class="gifts" id="barGifts"></div>
           <div class="food" id="barFood"></div>
@@ -410,6 +424,30 @@
           <p class="warn" id="eAside" hidden></p>
         </div>
 
+        <fieldset class="group" data-split-editor>
+          <legend>Your split</legend>
+          <p class="help" style="margin:0 0 10px">How your plan budget is divided. It's the same split as in the free planner above, so a change in either place shows in both.</p>
+          <div class="row three align-end">
+            <div>
+              <label for="splitGifts">Gifts (%)</label>
+              <input id="splitGifts" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="gifts">
+            </div>
+            <div>
+              <label for="splitFood">Food &amp; drink (%)</label>
+              <input id="splitFood" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="food">
+            </div>
+            <div>
+              <label for="splitExtras">Extras (%)</label>
+              <input id="splitExtras" type="number" inputmode="numeric" min="0" max="100" step="1" data-split="extras">
+            </div>
+          </div>
+          <div class="split-foot">
+            <p class="split-total" data-split-total></p>
+            <button type="button" class="btn small" data-split-reset>Reset to default (45/40/15)</button>
+          </div>
+          <p class="warn" data-split-msg role="status" hidden></p>
+        </fieldset>
+
         <fieldset class="group">
           <legend>Who are you buying for?</legend>
           <div id="qPeople"></div>
@@ -417,7 +455,8 @@
           <p class="warn" id="ePeople" hidden></p>
         </fieldset>
 
-        <button type="submit" class="btn primary wide">Build my plan</button>
+        <p class="warn" id="buildBlocked" hidden>Your split needs to add up to 100% before you can build the plan.</p>
+        <button type="submit" class="btn primary wide" id="buildBtn" aria-describedby="buildBlocked">Build my plan</button>
       </form>
 
       <div id="planOut" hidden>
@@ -456,7 +495,7 @@
   var STORE_KEY = 'whatitcosts_v1';
   var $ = function (id) { return document.getElementById(id); };
   var budgetEl = $('budget'), weeklyEl = $('weekly'), peopleEl = $('people'), savedEl = $('saved');
-  var giftsEl = $('pctGifts'), foodEl = $('pctFood'), modeWeeklyEl = $('modeWeekly');
+  var modeWeeklyEl = $('modeWeekly');
 
   var memory = {};
   function readKey(key) {
@@ -514,7 +553,29 @@
   var plan = { budget: 0, saved: 0 };
 
   var WEIGHTS = { Partner: 3, Child: 3, Parent: 2, Grandparent: 1.5, Sibling: 1.5, Friend: 1, Other: 0.5 };
-  var SPLIT_PCT = { gifts: 45, food: 40, extras: 15 };
+  var DEFAULT_SPLIT = { gifts: 45, food: 40, extras: 15 };
+  var SPLIT_KEYS = ['gifts', 'food', 'extras'];
+  var split = {};
+
+  function resetSplit() {
+    SPLIT_KEYS.forEach(function (k) { split[k] = String(DEFAULT_SPLIT[k]); });
+  }
+
+  function splitState() {
+    var pct = {}, bad = false, total = 0;
+    SPLIT_KEYS.forEach(function (k) {
+      var raw = String(split[k] == null ? '' : split[k]).trim();
+      var ok = /^\d{1,3}$/.test(raw) && +raw <= 100;
+      if (!ok) bad = true;
+      pct[k] = ok ? +raw : 0;
+      total += pct[k];
+    });
+    var message = bad ? 'Use whole numbers from 0 to 100 for each part of the split.'
+      : total > 100 ? 'These add up to more than 100% (' + total + '%). Bring the total down to 100%.'
+      : total < 100 ? 'These add up to ' + total + '%. Bring the total up to 100%.'
+      : '';
+    return { pct: pct, total: total, valid: !message, message: message };
+  }
   var LABELS = { gifts: 'Gifts', food: 'Food & drink', extras: 'Extras' };
   var PLAN_B = 0.8;
 
@@ -544,9 +605,15 @@
     return out;
   }
 
-  function splitOf(budget) {
-    var gifts = round2(budget * SPLIT_PCT.gifts / 100), food = round2(budget * SPLIT_PCT.food / 100);
-    return { gifts: gifts, food: food, extras: round2(budget - gifts - food) };
+  function splitOf(budget, pct) {
+    var out = {};
+    SPLIT_KEYS.forEach(function (k) { out[k] = round2(budget * pct[k] / 100); });
+    var used = SPLIT_KEYS.filter(function (k) { return pct[k] > 0; });
+    if (used.length) {
+      var top = used.reduce(function (a, k) { return pct[k] > pct[a] ? k : a; });
+      out[top] = round2(out[top] + budget - sum(SPLIT_KEYS, function (k) { return out[k]; }));
+    }
+    return out;
   }
 
   function allocateGifts(people, giftsAmount) {
@@ -605,15 +672,15 @@
     return {
       year: year, freq: a.freq, target: a.target, saved: a.saved,
       budget: budget, notice: notice, spare: spare,
-      split: splitOf(budget),
-      gifts: allocateGifts(a.people, splitOf(budget).gifts),
+      pct: a.split, split: splitOf(budget, a.split),
+      gifts: allocateGifts(a.people, splitOf(budget, a.split).gifts),
       paydays: n, perPayday: step, toSave: toSave, schedule: schedule,
-      planB: { budget: bBudget, split: splitOf(bBudget), perPayday: bStep, less: round2(budget - bBudget), lessPerPayday: step - bStep }
+      planB: { budget: bBudget, split: splitOf(bBudget, a.split), perPayday: bStep, less: round2(budget - bBudget), lessPerPayday: step - bStep }
     };
   }
 
   var answers = { freq: 'weekly' };
-  var targetEdited = false, savedEdited = false, lastPlan = null, rowId = 0;
+  var targetEdited = false, savedEdited = false, lastPlan = null, lastAnswers = null, rowId = 0;
 
   function addPersonRow(values) {
     var id = ++rowId, v = values || {};
@@ -639,7 +706,8 @@
   }
 
   function readAnswers() {
-    var ok = true, focus = null;
+    var ok = true, focus = null, st = splitState();
+    if (!st.valid) return null;
     var target = parseAmount($('qTarget').value);
     var saved = $('qSaved').value.trim() === '' ? 0 : parseAmount($('qSaved').value);
     var aside = $('qAside').value.trim() === '' ? null : parseAmount($('qAside').value);
@@ -660,7 +728,7 @@
       if (decided !== null && !(decided >= 0)) badDecided = true;
       people.push({ name: name, rel: row.querySelector('[data-k=rel]').value, decided: decided });
     });
-    if (!people.length) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
+    if (!people.length && st.pct.gifts > 0) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
     else if (badDecided) { showErr('ePeople', '"Already decided" needs to be an amount in euro, or left blank.'); ok = false; focus = focus || 'qPeople'; }
     else showErr('ePeople');
 
@@ -669,15 +737,19 @@
       if (el) el.focus();
       return null;
     }
-    return { target: target, saved: saved, freq: answers.freq, nextPayday: $('qPayday').value, setAside: aside, people: people };
+    return { target: target, saved: saved, freq: answers.freq, nextPayday: $('qPayday').value, setAside: aside, people: people, split: st.pct };
   }
 
   var LOGO = '<svg class="plan-logo" viewBox="0 0 1000 1000" aria-hidden="true"><circle class="bg" cx="500" cy="500" r="500" fill="#e8541e"/>' +
     '<g transform="rotate(-18 500 500)"><path d="M250 330 H620 L790 500 L620 670 H250 Q210 670 210 630 V370 Q210 330 250 330 Z" fill="#fff6e9"/>' +
     '<circle class="hole" cx="700" cy="500" r="30" fill="#e8541e"/><text x="425" y="600" font-family="Arial, sans-serif" font-weight="900" font-size="270" text-anchor="middle" fill="#e8541e">€</text></g></svg>';
 
-  function splitHtml(split) {
-    return '<ul class="plan-list">' + Object.keys(LABELS).map(function (k) {
+  function usedKeys(pct) {
+    return SPLIT_KEYS.filter(function (k) { return pct[k] > 0; });
+  }
+
+  function splitHtml(split, pct) {
+    return '<ul class="plan-list">' + usedKeys(pct).map(function (k) {
       return '<li><span class="who">' + esc(LABELS[k]) + '</span><span class="amt">' + money(split[k]) + '</span></li>';
     }).join('') + '</ul>';
   }
@@ -687,17 +759,22 @@
     h.push('<div class="plan-head">' + LOGO + '<div><p class="plan-year">CHRISTMAS ' + p.year + '</p><h3>Your Christmas plan</h3></div></div>');
     h.push('<p class="plan-budget">Plan budget <strong>' + money(p.budget) + '</strong></p>');
 
-    h.push('<h4>Where it goes</h4><div class="bar" aria-hidden="true">' + Object.keys(SPLIT_PCT).map(function (k) {
-      return '<div class="' + k + '" style="width:' + SPLIT_PCT[k] + '%"></div>';
-    }).join('') + '</div><ul class="legend">' + Object.keys(LABELS).map(function (k) {
-      return '<li><span class="sw ' + k + '"></span><span>' + esc(LABELS[k]) + ' (' + SPLIT_PCT[k] + '%)</span><span class="amt">' + money(p.split[k]) + '</span></li>';
+    h.push('<h4>Where it goes</h4><div class="bar" aria-hidden="true">' + usedKeys(p.pct).map(function (k) {
+      return '<div class="' + k + '" style="width:' + p.pct[k] + '%"></div>';
+    }).join('') + '</div><ul class="legend">' + usedKeys(p.pct).map(function (k) {
+      return '<li><span class="sw ' + k + '"></span><span>' + esc(LABELS[k]) + ' (' + p.pct[k] + '%)</span><span class="amt">' + money(p.split[k]) + '</span></li>';
     }).join('') + '</ul>');
 
-    h.push('<h4>Gifts</h4><ul class="plan-list">' + p.gifts.list.map(function (g) {
-      return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
-    }).join('') + '</ul>');
-    if (p.gifts.over) h.push('<p class="plan-msg">Your decided amounts are ' + money(p.gifts.over) + ' over the gifts share. Move money from Extras or lower one.</p>');
-    if (p.gifts.spare) h.push('<p class="plan-msg">' + money(p.gifts.spare) + ' of the gifts share is still free.</p>');
+    h.push('<h4>Gifts</h4>');
+    if (!p.pct.gifts) {
+      h.push("<p class=\"plan-msg\">Gifts aren't in this budget. Your split has 0% for gifts.</p>");
+    } else {
+      h.push('<ul class="plan-list">' + p.gifts.list.map(function (g) {
+        return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
+      }).join('') + '</ul>');
+    }
+    if (p.pct.gifts && p.gifts.over) h.push('<p class="plan-msg">Your decided amounts are ' + money(p.gifts.over) + ' over the gifts share. Move money from Extras or lower one.</p>');
+    if (p.pct.gifts && p.gifts.spare) h.push('<p class="plan-msg">' + money(p.gifts.spare) + ' of the gifts share is still free.</p>');
 
     h.push('<h4>Put it aside</h4>');
     if (!p.paydays) {
@@ -715,7 +792,7 @@
     var b = p.planB;
     h.push('<h4>If money is tight</h4>');
     h.push('<p class="plan-msg" style="margin:0 0 6px">Plan B at 80%: <strong>' + money(b.budget) + '</strong>, ' + money(b.less) + ' less than the main plan.</p>');
-    h.push(splitHtml(b.split));
+    h.push(splitHtml(b.split, p.pct));
     if (p.paydays) {
       h.push('<p class="plan-msg">' + money(b.perPayday) + ' a payday' + (b.lessPerPayday > 0 ? ', ' + money(b.lessPerPayday) + ' less each time.' : '.') + '</p>');
     }
@@ -732,10 +809,11 @@
 
   function planText(p) {
     var t = ['Your Christmas plan ' + p.year, 'Plan budget: ' + money(p.budget), '', 'Where it goes'];
-    Object.keys(LABELS).forEach(function (k) { t.push(LABELS[k] + ': ' + money(p.split[k])); });
+    usedKeys(p.pct).forEach(function (k) { t.push(LABELS[k] + ' (' + p.pct[k] + '%): ' + money(p.split[k])); });
     t.push('', 'Gifts');
-    p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
-    if (p.gifts.over) t.push('Decided amounts are ' + money(p.gifts.over) + ' over the gifts share.');
+    if (!p.pct.gifts) t.push("Gifts aren't in this budget.");
+    else p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
+    if (p.pct.gifts && p.gifts.over) t.push('Decided amounts are ' + money(p.gifts.over) + ' over the gifts share.');
     t.push('', 'Put it aside');
     if (!p.paydays) t.push('No paydays before Christmas Eve. Plan uses the ' + money(p.saved) + ' saved.');
     else if (!p.toSave) t.push("Saved enough already.");
@@ -744,7 +822,7 @@
       p.schedule.forEach(function (r) { t.push(dayLabel(r.date) + ': ' + money(r.amount) + ' (total ' + money(r.running) + ')'); });
     }
     var b = p.planB;
-    t.push('', 'If money is tight (80%)', 'Budget ' + money(b.budget) + ': gifts ' + money(b.split.gifts) + ', food & drink ' + money(b.split.food) + ', extras ' + money(b.split.extras));
+    t.push('', 'If money is tight (80%)', 'Budget ' + money(b.budget) + ': ' + usedKeys(p.pct).map(function (k) { return LABELS[k].toLowerCase() + ' ' + money(b.split[k]); }).join(', '));
     if (p.paydays) t.push(money(b.perPayday) + ' a payday, ' + money(b.less) + ' less overall');
     t.push('', 'Rule-of-thumb starting points, not surveyed figures. For information, not financial advice. whatitcosts.ie');
     return t.join('\n');
@@ -792,6 +870,7 @@
     ev.preventDefault();
     var a = readAnswers();
     if (!a) return;
+    lastAnswers = a;
     lastPlan = buildPlan(a, new Date());
     renderPlan(lastPlan);
     $('planOut').hidden = false;
@@ -810,6 +889,53 @@
   $('editBtn').addEventListener('click', function () {
     $('planForm').scrollIntoView({ block: 'start' });
     $('qTarget').focus({ preventScroll: true });
+  });
+
+  var splitEditors = document.querySelectorAll('[data-split-editor]');
+
+  function syncSplitEditors(source) {
+    var st = splitState();
+    splitEditors.forEach(function (ed) {
+      ed.querySelectorAll('[data-split]').forEach(function (inp) {
+        if (inp !== source) inp.value = split[inp.dataset.split];
+        inp.setAttribute('aria-invalid', String(!st.valid));
+      });
+      ed.querySelector('[data-split-total]').textContent = 'Total: ' + st.total + '%';
+      var msg = ed.querySelector('[data-split-msg]');
+      msg.textContent = st.message;
+      msg.hidden = st.valid;
+    });
+    $('buildBtn').disabled = !st.valid;
+    $('buildBlocked').hidden = st.valid;
+    return st;
+  }
+
+  function refreshPlan(st) {
+    if (!lastAnswers) return;
+    if (!st.valid) { $('planOut').hidden = true; return; }
+    lastAnswers.split = st.pct;
+    lastPlan = buildPlan(lastAnswers, new Date());
+    renderPlan(lastPlan);
+    $('planOut').hidden = false;
+  }
+
+  function onSplitChange(source) {
+    var st = syncSplitEditors(source);
+    update();
+    refreshPlan(st);
+  }
+
+  splitEditors.forEach(function (ed) {
+    ed.querySelectorAll('[data-split]').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        split[inp.dataset.split] = inp.value;
+        onSplitChange(inp);
+      });
+    });
+    ed.querySelector('[data-split-reset]').addEventListener('click', function () {
+      resetSplit();
+      onSplitChange(null);
+    });
   });
 
   function render() {
@@ -881,22 +1007,24 @@
       }
     }
 
-    var g = num(giftsEl), f = num(foodEl);
-    var x = Math.max(0, 100 - g - f);
-    var scale = Math.max(100, g + f);
-    $('splitWarn').hidden = g + f <= 100;
+    var pct = splitState().pct;
+    var g = pct.gifts, f = pct.food, x = pct.extras;
+    var scale = Math.max(100, g + f + x);
     $('barGifts').style.width = (g / scale * 100) + '%';
     $('barFood').style.width = (f / scale * 100) + '%';
     $('barExtras').style.width = (x / scale * 100) + '%';
     $('lblGifts').textContent = g;
     $('lblFood').textContent = f;
     $('lblExtras').textContent = x;
+    $('amtGifts').parentNode.hidden = !g;
+    $('amtFood').parentNode.hidden = !f;
+    $('amtExtras').parentNode.hidden = !x;
     var gifts = budget * g / 100;
     $('amtGifts').textContent = eur(gifts);
     $('amtFood').textContent = eur(budget * f / 100);
     $('amtExtras').textContent = eur(budget * x / 100);
     var pp = $('perPerson');
-    if (people > 0) {
+    if (people > 0 && g > 0) {
       pp.textContent = "That's about " + eur(gifts / people) + ' per person on gifts.';
       pp.hidden = false;
     } else {
@@ -966,12 +1094,14 @@
     });
   }
 
-  [budgetEl, weeklyEl, peopleEl, savedEl, giftsEl, foodEl].forEach(function (el) {
+  [budgetEl, weeklyEl, peopleEl, savedEl].forEach(function (el) {
     el.addEventListener('input', update);
   });
   $('modeBudget').addEventListener('change', update);
   modeWeeklyEl.addEventListener('change', update);
   addPersonRow();
+  resetSplit();
+  syncSplitEditors(null);
   renderLock();
   update();
 })();
