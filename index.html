@@ -628,7 +628,7 @@
     var fixedTotal = round2(sum(list.filter(function (g) { return g.fixed; }), function (g) { return g.amount; }));
     var pool = round2(giftsAmount - fixedTotal);
     var flex = list.filter(function (g) { return !g.fixed; });
-    var leftover = 0, tooSmall = false;
+    var tooSmall = false;
     if (pool > 0 && flex.length) {
       var wsum = sum(flex, function (g) { return WEIGHTS[g.rel]; });
       var byWeight = {};
@@ -647,22 +647,23 @@
           open[i % open.length].amount -= 5;
         }
       });
-      leftover = round2(pool - total());
+      var rest = round2(pool - total());
       tooSmall = groups.some(function (gr) { return gr.amount <= 0; });
-      for (var j = groups.length - 1; leftover > 0 && !tooSmall && j >= 0; j--) {
-        var gr = groups[j], higher = groups[j + 1], amt = round2(gr.amount + leftover);
+      for (var j = groups.length - 1; rest > 0 && !tooSmall && j >= 0; j--) {
+        var gr = groups[j], higher = groups[j + 1], amt = round2(gr.amount + rest);
         if (gr.people.length === 1 && (!higher || amt <= higher.amount)) {
           gr.amount = amt;
-          leftover = 0;
+          rest = 0;
         }
       }
       groups.forEach(function (gr) { gr.people.forEach(function (g) { g.amount = gr.amount; }); });
     }
     return {
       list: list,
-      over: Math.max(0, round2(fixedTotal - giftsAmount)),
-      spare: flex.length ? 0 : Math.max(0, pool),
-      leftover: leftover,
+      leftover: round2(giftsAmount - sum(list, function (g) { return g.amount; })),
+      fixedOver: Math.max(0, -pool),
+      noneLeft: flex.length > 0 && pool === 0,
+      othersAtZero: flex.length > 0 && pool < 0,
       tooSmall: tooSmall
     };
   }
@@ -750,16 +751,17 @@
     if (aside !== null && !(aside >= 0)) { showErr('eAside', 'Put in an amount in euro, or leave it blank.'); ok = false; focus = focus || 'qAside'; }
     else showErr('eAside');
 
-    var people = [], badDecided = false;
+    var people = [], badDecided = false, unnamedAmount = false;
     $('qPeople').querySelectorAll('.person-row').forEach(function (row) {
       var name = row.querySelector('[data-k=name]').value.trim();
       var d = row.querySelector('[data-k=decided]').value.trim();
       var decided = d === '' ? null : parseAmount(d);
-      if (!name) return;
+      if (!name) { if (d !== '') unnamedAmount = true; return; }
       if (decided !== null && !(decided >= 0)) badDecided = true;
       people.push({ name: name, rel: row.querySelector('[data-k=rel]').value, decided: decided });
     });
     if (!people.length && st.pct.gifts > 0) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
+    else if (unnamedAmount) { showErr('ePeople', 'Add a name for each person you have put an amount in for.'); ok = false; focus = focus || 'qPeople'; }
     else if (badDecided) { showErr('ePeople', '"Already decided" needs to be an amount in euro, or left blank.'); ok = false; focus = focus || 'qPeople'; }
     else showErr('ePeople');
 
@@ -785,6 +787,16 @@
     }).join('') + '</ul>';
   }
 
+  function giftNotes(g) {
+    var notes = [];
+    if (g.fixedOver) {
+      notes.push('Your fixed amounts add up to more than your gift budget by ' + money(g.fixedOver) + '.' +
+        (g.othersAtZero ? ' Everyone else is at €0 until you lower a fixed amount or raise the gift share in your split.' : ''));
+    }
+    if (g.noneLeft) notes.push("Your fixed amounts use the whole gift budget, so there's nothing left for the others.");
+    return notes;
+  }
+
   function renderPlan(p) {
     var h = [];
     h.push('<div class="plan-head">' + LOGO + '<div><p class="plan-year">CHRISTMAS ' + p.year + '</p><h3>Your Christmas plan</h3></div></div>');
@@ -807,8 +819,7 @@
         : '') + '</ul>');
       if (p.gifts.tooSmall) h.push("<p class=\"plan-msg\">The gift budget is too small to give everyone at least €5. Try fewer people or a bigger gift share in your split.</p>");
     }
-    if (p.pct.gifts && p.gifts.over) h.push('<p class="plan-msg">Your decided amounts are ' + money(p.gifts.over) + ' over the gifts share. Move money from Extras or lower one.</p>');
-    if (p.pct.gifts && p.gifts.spare) h.push('<p class="plan-msg">' + money(p.gifts.spare) + ' of the gifts share is still free.</p>');
+    if (p.pct.gifts) giftNotes(p.gifts).forEach(function (n) { h.push('<p class="plan-msg">' + esc(n) + '</p>'); });
 
     h.push('<h4>Put it aside</h4>');
     if (!p.paydays) {
@@ -851,7 +862,7 @@
       if (p.gifts.leftover) t.push((p.gifts.leftover > 0 ? 'Left over: ' : 'Over by: ') + money(p.gifts.leftover));
       if (p.gifts.tooSmall) t.push('The gift budget is too small to give everyone at least €5.');
     }
-    if (p.pct.gifts && p.gifts.over) t.push('Decided amounts are ' + money(p.gifts.over) + ' over the gifts share.');
+    if (p.pct.gifts) giftNotes(p.gifts).forEach(function (n) { t.push(n); });
     t.push('', 'Put it aside');
     if (!p.paydays) t.push('No paydays before Christmas Eve. Plan uses the ' + money(p.saved) + ' saved.');
     else if (!p.toSave) t.push("Saved enough already.");
