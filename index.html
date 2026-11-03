@@ -175,11 +175,11 @@
     padding: 14px 0; border-top: 1px solid var(--border);
   }
   .person-row:first-child { border-top: 0; padding-top: 4px; }
-  .person-row .pr-name { grid-column: 1 / -1; }
+  .person-row .pr-name, .person-row .pr-method { grid-column: 1 / -1; }
   .person-row label { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
   .person-row input, .person-row select { font-size: 17px; padding: 10px 12px; }
   .person-row select[aria-invalid="true"] { border-color: var(--accent-ink); }
-  .person-row .btn { grid-column: 1 / -1; justify-self: start; }
+  .person-row .btn { align-self: end; justify-self: start; }
   .note {
     margin: 0 0 16px; padding: 12px 14px; border-radius: 12px;
     background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); font-size: 16px;
@@ -207,11 +207,20 @@
   .plan-list .amt { font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
   .plan-list .leftover { color: var(--muted); font-style: italic; }
   .plan-msg { margin: 8px 0 0; font-size: 15px; }
-  .sched { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
-  .sched th { font-size: 13px; color: var(--muted); font-weight: 600; text-align: left; padding: 0 0 4px; }
-  .sched td { padding: 6px 0; border-top: 1px dashed var(--border); }
-  .sched .num { text-align: right; }
-  .sched td.num:first-of-type { font-weight: 700; }
+  .pd-list { list-style: none; margin: 0; padding: 0; }
+  .pd { padding: 10px 0; border-top: 1px dashed var(--border); }
+  .pd:first-child { border-top: 0; padding-top: 4px; }
+  .pd-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .pd-date { font-weight: 700; }
+  .pd-amt { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+  .pd-sub, .pd-pot, .pd-note { margin: 2px 0 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pd-then { margin: 6px 0 2px; font-size: 14px; font-weight: 600; }
+  .pd-buy { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 3px solid var(--border); }
+  .pd-buy li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 15px; padding: 2px 0; }
+  .pd-buy .what { min-width: 0; overflow-wrap: anywhere; }
+  .pd-buy .amt { font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+  .pd-buy .pd-note { display: block; }
+  .bb-list .when { display: block; font-size: 13px; color: var(--muted); }
   .plan-actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .copy-msg { margin: 8px 0 0; min-height: 1.5em; font-size: 15px; font-weight: 600; color: var(--accent-ink); }
 
@@ -234,8 +243,8 @@
     .plan h4 { margin: 12px 0 4px; padding-top: 8px; }
     .plan .bar { height: 14px; margin: 2px 0 6px; }
     .legend { gap: 2px; }
-    .legend li, .plan-list li, .sched { font-size: 14px; }
-    .plan-list li, .sched td { padding: 2px 0; }
+    .legend li, .plan-list li, .pd-buy li { font-size: 14px; }
+    .plan-list li, .pd { padding: 2px 0; }
     .plan-msg { margin-top: 4px; font-size: 14px; }
     .plan .fine { margin-top: 8px; font-size: 11px; }
     @page { margin: 12mm; }
@@ -624,7 +633,7 @@
 
   function allocateGifts(people, giftsAmount) {
     var list = people.map(function (p) {
-      return { name: p.name, rel: p.rel, fixed: p.decided != null, amount: p.decided != null ? p.decided : 0 };
+      return { name: p.name, rel: p.rel, method: p.method === 'online' ? 'online' : 'shop', fixed: p.decided != null, amount: p.decided != null ? p.decided : 0 };
     });
     var fixedTotal = round2(sum(list.filter(function (g) { return g.fixed; }), function (g) { return g.amount; }));
     var pool = round2(giftsAmount - fixedTotal);
@@ -669,6 +678,71 @@
     };
   }
 
+  var METHOD_LABEL = { shop: 'in a shop', online: 'online or posted' };
+
+  function toDate(d) {
+    return d instanceof Date ? new Date(d.getFullYear(), d.getMonth(), d.getDate()) : fromIso(String(d));
+  }
+
+  function planSpending(paydays, setAside, items, christmasDate, alreadySaved) {
+    var dates = (paydays || []).map(toDate), xmas = toDate(christmasDate), n = dates.length;
+    var aimBy = function (days) { return new Date(xmas.getFullYear(), xmas.getMonth(), xmas.getDate() - days); };
+    var foodBy = aimBy(2);
+    var cum = [], put = [], run = +alreadySaved || 0;
+    dates.forEach(function (d, i) { run = round2(run + (+setAside[i] || 0)); cum.push(run); put.push(0); });
+    var fits = function (i, amount) {
+      var used = 0;
+      for (var j = 0; j < n; j++) {
+        used = round2(used + put[j] + (j === i ? amount : 0));
+        if (j >= i && round2(cum[j] - used) < 0) return false;
+      }
+      return true;
+    };
+    var out = (items || []).filter(function (it) { return +it.amount > 0; }).map(function (it) {
+      var o = {};
+      Object.keys(it).forEach(function (k) { o[k] = it[k]; });
+      o.amount = round2(+it.amount);
+      o.slot = -1;
+      o.late = false;
+      o.aimBy = it.kind === 'food' ? foodBy : it.kind === 'buffer' ? null
+        : aimBy(it.kind === 'gift' && it.method === 'online' ? 21 : 10);
+      return o;
+    });
+    var rank = function (it) { return it.kind === 'gift' ? (it.method === 'online' ? 1 : 2) : 3; };
+    var order = out.filter(function (it) { return it.kind === 'food'; })
+      .concat(out.filter(function (it) { return it.kind === 'gift' || it.kind === 'extras'; })
+        .sort(function (a, b) { return rank(a) - rank(b) || b.amount - a.amount; }))
+      .concat(out.filter(function (it) { return it.kind === 'buffer'; }));
+    var idx = dates.map(function (d, i) { return i; });
+    order.forEach(function (it) {
+      var ok = function (i) { return fits(i, it.amount); };
+      var onTime = idx.filter(function (i) { return !it.aimBy || dates[i] <= it.aimBy; });
+      var after = idx.filter(function (i) { return it.aimBy && dates[i] > it.aimBy; });
+      var i = it.kind === 'buffer' ? (n && ok(n - 1) ? n - 1 : undefined)
+        : it.kind === 'food' ? onTime.slice().reverse().filter(ok)[0]
+        : onTime.filter(ok)[0];
+      var late = false;
+      if (i === undefined && it.kind !== 'buffer') { i = after.filter(ok)[0]; late = i !== undefined; }
+      if (i !== undefined) {
+        it.slot = i;
+        it.late = late;
+        put[i] = round2(put[i] + it.amount);
+      }
+    });
+    var spent = 0;
+    var slots = dates.map(function (d, i) {
+      spent = round2(spent + put[i]);
+      return {
+        date: d, setAside: +setAside[i] || 0, saved: cum[i],
+        items: out.filter(function (it) { return it.slot === i; }),
+        potAfter: round2(cum[i] - spent)
+      };
+    });
+    return { slots: slots, items: out, unassigned: out.filter(function (it) { return it.slot < 0; }), aimOnline: aimBy(21), aimShop: aimBy(10) };
+  }
+
+  window.whatitcosts = { planSpending: planSpending };
+
   function buildPlan(a, now) {
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     var year = today > new Date(today.getFullYear(), 11, 25) ? today.getFullYear() + 1 : today.getFullYear();
@@ -700,13 +774,24 @@
       return { date: d, amount: amt, running: running };
     });
 
+    var split = splitOf(budget, a.split);
+    var gifts = allocateGifts(a.people, split.gifts);
+    var items = gifts.list.map(function (g, i) {
+      return { id: 'gift' + i, kind: 'gift', name: g.name, rel: g.rel, method: g.method, amount: g.amount };
+    });
+    if (split.extras > 0) items.push({ id: 'extras', kind: 'extras', amount: split.extras });
+    if (split.food > 0) items.push({ id: 'food', kind: 'food', amount: split.food });
+    if (gifts.leftover > 0) items.push({ id: 'buffer', kind: 'buffer', amount: gifts.leftover });
+    var spending = n
+      ? planSpending(days, schedule.map(function (r) { return r.amount; }), items, new Date(year, 11, 25), a.saved)
+      : planSpending(a.saved > 0 ? [today] : [], [0], items, new Date(year, 11, 25), a.saved);
+
     var bBudget = round2(budget * PLAN_B);
     var bStep = perPayday(bBudget - a.saved, n);
     return {
       year: year, freq: a.freq, target: a.target, saved: a.saved,
       budget: budget, notice: notice, spare: spare,
-      pct: a.split, split: splitOf(budget, a.split),
-      gifts: allocateGifts(a.people, splitOf(budget, a.split).gifts),
+      pct: a.split, split: split, gifts: gifts, spending: spending,
       paydays: n, perPayday: step, toSave: toSave, schedule: schedule,
       planB: { budget: bBudget, split: splitOf(bBudget, a.split), perPayday: bStep, less: round2(budget - bBudget), lessPerPayday: step - bStep }
     };
@@ -724,6 +809,7 @@
       '<div><label for="pr' + id + '">Relationship</label><select id="pr' + id + '" data-k="rel"><option value="">Choose…</option>' +
         Object.keys(WEIGHTS).map(function (r) { return '<option>' + r + '</option>'; }).join('') + '</select></div>' +
       '<div><label for="pd' + id + '">Already decided (€, optional)</label><input id="pd' + id + '" type="text" inputmode="decimal" autocomplete="off" data-k="decided"></div>' +
+      '<div class="pr-method"><label for="pm' + id + '">How will you get it?</label><select id="pm' + id + '" data-k="method"><option value="shop">In a shop</option><option value="online">Online or posted</option></select></div>' +
       '<button type="button" class="btn small" data-remove>Remove person</button>';
     row.querySelector('[data-k=name]').value = v.name || '';
     var rel = row.querySelector('[data-k=rel]');
@@ -732,6 +818,7 @@
       if (rel.value) { rel.removeAttribute('aria-invalid'); rel.removeAttribute('aria-describedby'); }
     });
     row.querySelector('[data-k=decided]').value = v.decided != null ? v.decided : '';
+    row.querySelector('[data-k=method]').value = v.method === 'online' ? 'online' : 'shop';
     row.querySelector('[data-remove]').addEventListener('click', function () { row.remove(); });
     $('qPeople').append(row);
     return row;
@@ -769,7 +856,7 @@
       if (missing && !noRel) noRel = relEl;
       if (!name) { if (d !== '' && !unnamedAmount) unnamedAmount = row.querySelector('[data-k=name]'); return; }
       if (decided !== null && !(decided >= 0)) badDecided = true;
-      people.push({ name: name, rel: relEl.value, decided: decided });
+      people.push({ name: name, rel: relEl.value, decided: decided, method: row.querySelector('[data-k=method]').value === 'online' ? 'online' : 'shop' });
     });
     if (noRel) { showErr('ePeople', 'Choose a relationship for each person.'); ok = false; focus = focus || noRel; }
     else if (!people.length && st.pct.gifts > 0) { showErr('ePeople', 'Add at least one person with a name.'); ok = false; focus = focus || 'qPeople'; }
@@ -809,6 +896,96 @@
     return notes;
   }
 
+  function namesList(names) {
+    return names.length < 2 ? names.join('') : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  function lateNote(it) {
+    return it.kind === 'gift' && it.method === 'online'
+      ? 'Later than ideal: the aim was to order by ' + dayLabel(it.aimBy) + '. This is your first payday with enough, so allow extra time for delivery.'
+      : 'Later than ideal: the aim was ' + dayLabel(it.aimBy) + '. This is your first payday with enough, so leave a little extra time.';
+  }
+
+  function buyLines(items) {
+    var lines = [], groups = {};
+    items.forEach(function (it) {
+      if (it.kind === 'gift') {
+        var key = it.method + (it.late ? '-late' : '');
+        (groups[key] = groups[key] || []).push(it);
+        return;
+      }
+      var label = it.kind === 'extras' ? 'Extras' : it.kind === 'food' ? 'Food and drink' : 'Keep this as a buffer';
+      var note = it.kind === 'food' ? 'Buy fresh food in the final week; drinks and long-life items can come earlier.' : '';
+      if (it.late) note = lateNote(it) + (note ? ' ' + note : '');
+      lines.push({ label: label, amount: it.amount, note: note, order: it.kind === 'extras' ? 4 : it.kind === 'food' ? 5 : 6 });
+    });
+    [['online', 0], ['online-late', 1], ['shop', 2], ['shop-late', 3]].forEach(function (k) {
+      var g = groups[k[0]];
+      if (!g) return;
+      lines.push({
+        label: (g.length > 1 ? 'Gifts for ' : 'Gift for ') + namesList(g.map(function (x) { return x.name; })) + ' (' + METHOD_LABEL[g[0].method] + ')',
+        amount: round2(sum(g, function (x) { return x.amount; })), note: g[0].late ? lateNote(g[0]) : '', order: k[1]
+      });
+    });
+    return lines.sort(function (a, b) { return a.order - b.order; });
+  }
+
+  function paydayGroups(p) {
+    var out = [];
+    p.spending.slots.forEach(function (s) {
+      var prev = out[out.length - 1];
+      if (!s.items.length && prev && !prev.items.length) {
+        prev.to = s.date;
+        prev.count++;
+        prev.amounts.push(s.setAside);
+        prev.saved = s.saved;
+        prev.potAfter = s.potAfter;
+      } else {
+        out.push({ from: s.date, to: s.date, count: 1, amounts: [s.setAside], saved: s.saved, potAfter: s.potAfter, items: s.items });
+      }
+    });
+    return out;
+  }
+
+  function paydayHeading(p, g) {
+    if (!p.paydays) return { date: 'Now, from what you have saved', amt: '' };
+    var same = g.amounts.every(function (x) { return x === g.amounts[0]; });
+    if (g.count === 1) return { date: dayLabel(g.from), amt: 'Set aside ' + money(g.amounts[0]) };
+    return {
+      date: dayLabel(g.from) + ' to ' + dayLabel(g.to) + ' (' + g.count + ' paydays)',
+      amt: same ? 'Set aside ' + money(g.amounts[0]) + ' each' : 'Set aside ' + money(sum(g.amounts, function (x) { return x; })) + ' in all'
+    };
+  }
+
+  function spendingSummary(p) {
+    var lines = [], sp = p.spending;
+    if (!p.paydays) {
+      if (sp.slots.length) lines.push("There's no payday before Christmas, so buy everything from what you've already saved.");
+      return lines;
+    }
+    lines.push('Your last payday before Christmas is ' + dayLabel(p.schedule[p.schedule.length - 1].date) + ". After that, you'll be spending what you've already set aside.");
+    var online = sp.items.some(function (it) { return it.kind === 'gift' && it.method === 'online'; });
+    if (online && p.schedule[0].date > sp.aimOnline) {
+      lines.push('Your first payday is ' + dayLabel(p.schedule[0].date) + ', which is later than ideal for anything ordered online, so leave more time for delivery or choose shop-bought gifts.');
+    }
+    return lines;
+  }
+
+  function unassignedLabel(it) {
+    return it.kind === 'gift' ? 'Gift for ' + it.name : it.kind === 'food' ? 'Food and drink' : it.kind === 'extras' ? 'Extras' : 'Buffer';
+  }
+
+  function buyBy(p) {
+    var gifts = p.spending.items.filter(function (it) { return it.kind === 'gift'; });
+    return gifts.sort(function (a, b) {
+      var sa = a.slot < 0 ? 1e9 : a.slot, sb = b.slot < 0 ? 1e9 : b.slot;
+      return sa - sb || b.amount - a.amount;
+    }).map(function (it) {
+      var when = it.slot < 0 ? 'Not covered yet' : p.paydays ? dayLabel(p.spending.slots[it.slot].date) : 'Now';
+      return { when: when + (it.late ? ' (later than ideal)' : ''), name: it.name, how: METHOD_LABEL[it.method], amount: it.amount };
+    });
+  }
+
   function renderPlan(p) {
     var h = [];
     h.push('<div class="plan-head">' + LOGO + '<div><p class="plan-year">CHRISTMAS ' + p.year + '</p><h3>Your Christmas plan</h3></div></div>');
@@ -825,7 +1002,7 @@
       h.push("<p class=\"plan-msg\">Gifts aren't in this budget. Your split has 0% for gifts.</p>");
     } else {
       h.push('<ul class="plan-list">' + p.gifts.list.map(function (g) {
-        return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
+        return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + (g.method === 'online' ? ', online or posted' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
       }).join('') + (p.gifts.leftover
         ? '<li class="leftover"><span class="who">' + (p.gifts.leftover > 0 ? 'Left over' : 'Over by') + '</span><span class="amt">' + money(p.gifts.leftover) + '</span></li>'
         : '') + '</ul>');
@@ -833,17 +1010,35 @@
     }
     if (p.pct.gifts) giftNotes(p.gifts).forEach(function (n) { h.push('<p class="plan-msg">' + esc(n) + '</p>'); });
 
-    h.push('<h4>Put it aside</h4>');
-    if (!p.paydays) {
-      h.push('<p class="plan-msg">No paydays before Christmas Eve, so the plan uses the ' + money(p.saved) + ' you have saved.</p>');
-    } else if (!p.toSave) {
-      h.push("<p class=\"plan-msg\">You've saved enough already. Nothing more to put aside.</p>");
-    } else {
-      h.push('<p class="plan-msg" style="margin:0 0 8px">Starting from ' + money(p.saved) + ' saved.</p>');
-      h.push('<table class="sched"><thead><tr><th>Payday</th><th class="num">Put aside</th><th class="num">Total</th></tr></thead><tbody>' +
-        p.schedule.map(function (r) {
-          return '<tr><td>' + esc(dayLabel(r.date)) + '</td><td class="num">' + money(r.amount) + '</td><td class="num">' + money(r.running) + '</td></tr>';
-        }).join('') + '</tbody></table>');
+    h.push('<h4>What to do on each payday</h4>');
+    spendingSummary(p).forEach(function (line) { h.push('<p class="plan-msg">' + esc(line) + '</p>'); });
+    if (p.paydays && !p.toSave) h.push("<p class=\"plan-msg\">You've saved enough already. Nothing more to put aside.</p>");
+    if (!p.paydays && !p.spending.slots.length) h.push('<p class="plan-msg">No paydays before Christmas Eve and nothing saved yet, so there is nothing to schedule.</p>');
+    if (p.spending.slots.length) {
+      if (p.paydays) h.push('<p class="plan-msg">Starting from ' + money(p.saved) + ' saved.</p>');
+      h.push('<ol class="pd-list">' + paydayGroups(p).map(function (g) {
+        var head = paydayHeading(p, g), lines = buyLines(g.items);
+        return '<li class="pd"><div class="pd-head"><span class="pd-date">' + esc(head.date) + '</span><span class="pd-amt">' + esc(head.amt) + '</span></div>' +
+          (p.paydays ? '<p class="pd-sub">Saved so far ' + money(g.saved) + '</p>' : '') +
+          (lines.length
+            ? '<p class="pd-then">Then buy:</p><ul class="pd-buy">' + lines.map(function (l) {
+                return '<li><span class="what">' + esc(l.label) + (l.note ? '<span class="pd-note">' + esc(l.note) + '</span>' : '') + '</span><span class="amt">' + money(l.amount) + '</span></li>';
+              }).join('') + '</ul>'
+            : '<p class="pd-then">Set it aside. Nothing to buy yet.</p>') +
+          '<p class="pd-pot">In your pot after this: ' + money(g.potAfter) + '</p></li>';
+      }).join('') + '</ol>');
+    }
+    if (p.spending.unassigned.length) {
+      h.push('<p class="plan-msg">Not covered by your plan yet: ' + esc(p.spending.unassigned.map(function (it) {
+        return unassignedLabel(it) + ' ' + money(it.amount);
+      }).join(', ')) + '. Lower an amount or raise your target to fit it in.</p>');
+    }
+
+    var bb = buyBy(p);
+    if (bb.length) {
+      h.push('<h4>Buy-by list</h4><ul class="plan-list bb-list">' + bb.map(function (x) {
+        return '<li><span class="who">' + esc(x.name) + ' <span class="rel">' + esc(x.how) + '</span><span class="when">' + esc(x.when) + '</span></span><span class="amt">' + money(x.amount) + '</span></li>';
+      }).join('') + '</ul>');
     }
 
     var b = p.planB;
@@ -870,17 +1065,29 @@
     t.push('', 'Gifts');
     if (!p.pct.gifts) t.push("Gifts aren't in this budget.");
     else {
-      p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
+      p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + ', ' + METHOD_LABEL[g.method] + '): ' + money(g.amount)); });
       if (p.gifts.leftover) t.push((p.gifts.leftover > 0 ? 'Left over: ' : 'Over by: ') + money(p.gifts.leftover));
       if (p.gifts.tooSmall) t.push('The gift budget is too small to give everyone at least €5.');
     }
     if (p.pct.gifts) giftNotes(p.gifts).forEach(function (n) { t.push(n); });
-    t.push('', 'Put it aside');
-    if (!p.paydays) t.push('No paydays before Christmas Eve. Plan uses the ' + money(p.saved) + ' saved.');
-    else if (!p.toSave) t.push("Saved enough already.");
-    else {
-      t.push('Starting from ' + money(p.saved) + ' saved');
-      p.schedule.forEach(function (r) { t.push(dayLabel(r.date) + ': ' + money(r.amount) + ' (total ' + money(r.running) + ')'); });
+    t.push('', 'What to do on each payday');
+    spendingSummary(p).forEach(function (line) { t.push(line); });
+    if (p.paydays && !p.toSave) t.push("You've saved enough already. Nothing more to put aside.");
+    if (p.paydays) t.push('Starting from ' + money(p.saved) + ' saved.');
+    paydayGroups(p).forEach(function (g) {
+      var head = paydayHeading(p, g), lines = buyLines(g.items);
+      t.push('', head.date + (head.amt ? ': ' + head.amt.charAt(0).toLowerCase() + head.amt.slice(1) : '') + (p.paydays ? ' (saved so far ' + money(g.saved) + ')' : ''));
+      if (lines.length) lines.forEach(function (l) { t.push('- ' + l.label + ': ' + money(l.amount) + (l.note ? '. ' + l.note : '')); });
+      else t.push('- Set it aside. Nothing to buy yet.');
+      t.push('In your pot after this: ' + money(g.potAfter));
+    });
+    if (p.spending.unassigned.length) {
+      t.push('', 'Not covered by your plan yet: ' + p.spending.unassigned.map(function (it) { return unassignedLabel(it) + ' ' + money(it.amount); }).join(', '));
+    }
+    var bbt = buyBy(p);
+    if (bbt.length) {
+      t.push('', 'Buy-by list');
+      bbt.forEach(function (x) { t.push(x.when + ': ' + x.name + ', ' + x.how + ', ' + money(x.amount)); });
     }
     var b = p.planB;
     t.push('', 'If money is tight (80%)', 'Budget ' + money(b.budget) + ': ' + usedKeys(p.pct).map(function (k) { return LABELS[k].toLowerCase() + ' ' + money(b.split[k]); }).join(', '));
