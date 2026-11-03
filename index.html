@@ -204,6 +204,7 @@
   .plan-list .who { min-width: 0; overflow-wrap: anywhere; }
   .plan-list .rel { color: var(--muted); font-size: 14px; }
   .plan-list .amt { font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+  .plan-list .leftover { color: var(--muted); font-style: italic; }
   .plan-msg { margin: 8px 0 0; font-size: 15px; }
   .sched { width: 100%; border-collapse: collapse; font-size: 16px; font-variant-numeric: tabular-nums; }
   .sched th { font-size: 13px; color: var(--muted); font-weight: 600; text-align: left; padding: 0 0 4px; }
@@ -552,7 +553,11 @@
 
   var plan = { budget: 0, saved: 0 };
 
-  var WEIGHTS = { Partner: 3, Child: 3, Parent: 2, Grandparent: 1.5, Sibling: 1.5, Friend: 1, Other: 0.5 };
+  var WEIGHTS = {
+    'Partner': 3, 'Child': 3, 'Parent': 2, 'Parent-in-law': 1.5, 'Grandparent': 1.5,
+    'Sibling': 1.5, 'Sibling-in-law': 1, 'Niece / nephew': 1.5, 'Godchild': 1.5,
+    'Aunt / uncle': 1, 'Cousin': 0.5, 'Friend': 1, 'Other': 0.5
+  };
   var DEFAULT_SPLIT = { gifts: 45, food: 40, extras: 15 };
   var SPLIT_KEYS = ['gifts', 'food', 'extras'];
   var split = {};
@@ -623,16 +628,42 @@
     var fixedTotal = round2(sum(list.filter(function (g) { return g.fixed; }), function (g) { return g.amount; }));
     var pool = round2(giftsAmount - fixedTotal);
     var flex = list.filter(function (g) { return !g.fixed; });
+    var leftover = 0, tooSmall = false;
     if (pool > 0 && flex.length) {
       var wsum = sum(flex, function (g) { return WEIGHTS[g.rel]; });
-      flex.forEach(function (g) { g.amount = Math.round(pool * WEIGHTS[g.rel] / wsum / 5) * 5; });
-      var top = flex.reduce(function (a, g) { return WEIGHTS[g.rel] > WEIGHTS[a.rel] ? g : a; });
-      top.amount = round2(top.amount + pool - sum(flex, function (g) { return g.amount; }));
+      var byWeight = {};
+      flex.forEach(function (g) {
+        var w = WEIGHTS[g.rel];
+        (byWeight[w] = byWeight[w] || { w: w, people: [] }).people.push(g);
+      });
+      var groups = Object.keys(byWeight).map(function (k) { return byWeight[k]; })
+        .sort(function (a, b) { return a.w - b.w; });
+      groups.forEach(function (gr) { gr.amount = Math.max(5, Math.round(pool * gr.w / wsum / 5) * 5); });
+      var total = function () { return sum(groups, function (gr) { return gr.amount * gr.people.length; }); };
+      [5, 0].forEach(function (floor) {
+        for (var i = 0; round2(total()) > pool; i++) {
+          var open = groups.filter(function (gr) { return gr.amount - 5 >= floor; });
+          if (!open.length) break;
+          open[i % open.length].amount -= 5;
+        }
+      });
+      leftover = round2(pool - total());
+      tooSmall = groups.some(function (gr) { return gr.amount <= 0; });
+      for (var j = groups.length - 1; leftover > 0 && !tooSmall && j >= 0; j--) {
+        var gr = groups[j], higher = groups[j + 1], amt = round2(gr.amount + leftover);
+        if (gr.people.length === 1 && (!higher || amt <= higher.amount)) {
+          gr.amount = amt;
+          leftover = 0;
+        }
+      }
+      groups.forEach(function (gr) { gr.people.forEach(function (g) { g.amount = gr.amount; }); });
     }
     return {
       list: list,
       over: Math.max(0, round2(fixedTotal - giftsAmount)),
-      spare: flex.length ? 0 : Math.max(0, pool)
+      spare: flex.length ? 0 : Math.max(0, pool),
+      leftover: leftover,
+      tooSmall: tooSmall
     };
   }
 
@@ -771,7 +802,10 @@
     } else {
       h.push('<ul class="plan-list">' + p.gifts.list.map(function (g) {
         return '<li><span class="who">' + esc(g.name) + ' <span class="rel">' + esc(g.rel) + (g.fixed ? ', decided' : '') + '</span></span><span class="amt">' + money(g.amount) + '</span></li>';
-      }).join('') + '</ul>');
+      }).join('') + (p.gifts.leftover
+        ? '<li class="leftover"><span class="who">' + (p.gifts.leftover > 0 ? 'Left over' : 'Over by') + '</span><span class="amt">' + money(p.gifts.leftover) + '</span></li>'
+        : '') + '</ul>');
+      if (p.gifts.tooSmall) h.push("<p class=\"plan-msg\">The gift budget is too small to give everyone at least €5. Try fewer people or a bigger gift share in your split.</p>");
     }
     if (p.pct.gifts && p.gifts.over) h.push('<p class="plan-msg">Your decided amounts are ' + money(p.gifts.over) + ' over the gifts share. Move money from Extras or lower one.</p>');
     if (p.pct.gifts && p.gifts.spare) h.push('<p class="plan-msg">' + money(p.gifts.spare) + ' of the gifts share is still free.</p>');
@@ -812,7 +846,11 @@
     usedKeys(p.pct).forEach(function (k) { t.push(LABELS[k] + ' (' + p.pct[k] + '%): ' + money(p.split[k])); });
     t.push('', 'Gifts');
     if (!p.pct.gifts) t.push("Gifts aren't in this budget.");
-    else p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
+    else {
+      p.gifts.list.forEach(function (g) { t.push(g.name + ' (' + g.rel + (g.fixed ? ', decided' : '') + '): ' + money(g.amount)); });
+      if (p.gifts.leftover) t.push((p.gifts.leftover > 0 ? 'Left over: ' : 'Over by: ') + money(p.gifts.leftover));
+      if (p.gifts.tooSmall) t.push('The gift budget is too small to give everyone at least €5.');
+    }
     if (p.pct.gifts && p.gifts.over) t.push('Decided amounts are ' + money(p.gifts.over) + ' over the gifts share.');
     t.push('', 'Put it aside');
     if (!p.paydays) t.push('No paydays before Christmas Eve. Plan uses the ' + money(p.saved) + ' saved.');
