@@ -650,6 +650,37 @@
         .sort(function (a, b) { return a.w - b.w; });
       groups.forEach(function (gr) { gr.amount = Math.max(5, Math.round(pool * gr.w / wsum / 5) * 5); });
       var total = function () { return sum(groups, function (gr) { return gr.amount * gr.people.length; }); };
+      if (round2(total()) > pool) {
+        var base = groups.map(function (gr) { return gr.amount; }), pick = [], best = null;
+        var higherKept = function (a, b) {
+          for (var i = a.length - 1; i >= 0; i--) if (a[i] !== b[i]) return a[i] > b[i];
+          return false;
+        };
+        var search = function (k) {
+          if (k === groups.length) {
+            var t = 0, dev = 0;
+            groups.forEach(function (gr, i) {
+              t += pick[i] * gr.people.length;
+              dev += gr.people.length * Math.pow(pick[i] - pool * gr.w / wsum, 2);
+            });
+            var waste = round2(pool - t);
+            if (waste < 0) return;
+            if (!best || waste < best.waste || (waste === best.waste &&
+                (dev < best.dev - 1e-9 || (Math.abs(dev - best.dev) <= 1e-9 && higherKept(pick, best.pick))))) {
+              best = { waste: waste, dev: dev, pick: pick.slice() };
+            }
+            return;
+          }
+          for (var cut = 0; cut <= 15; cut += 5) {
+            var a = base[k] - cut;
+            if (a < 5 || (k && a < pick[k - 1])) continue;
+            pick[k] = a;
+            search(k + 1);
+          }
+        };
+        search(0);
+        if (best) groups.forEach(function (gr, i) { gr.amount = best.pick[i]; });
+      }
       [5, 0].forEach(function (floor) {
         for (var i = 0; round2(total()) > pool; i++) {
           var open = groups.filter(function (gr) { return gr.amount - 5 >= floor; });
@@ -687,7 +718,7 @@
   function planSpending(paydays, setAside, items, christmasDate, alreadySaved) {
     var dates = (paydays || []).map(toDate), xmas = toDate(christmasDate), n = dates.length;
     var aimBy = function (days) { return new Date(xmas.getFullYear(), xmas.getMonth(), xmas.getDate() - days); };
-    var foodBy = aimBy(2);
+    var foodBy = aimBy(2), closeFrom = aimBy(4);
     var cum = [], put = [], run = +alreadySaved || 0;
     dates.forEach(function (d, i) { run = round2(run + (+setAside[i] || 0)); cum.push(run); put.push(0); });
     var fits = function (i, amount) {
@@ -704,8 +735,8 @@
       o.amount = round2(+it.amount);
       o.slot = -1;
       o.late = false;
-      o.aimBy = it.kind === 'food' ? foodBy : it.kind === 'buffer' ? null
-        : aimBy(it.kind === 'gift' && it.method === 'online' ? 21 : 10);
+      o.close = false;
+      o.aimBy = it.kind === 'food' ? foodBy : it.kind === 'gift' && it.method === 'online' ? aimBy(21) : null;
       return o;
     });
     var rank = function (it) { return it.kind === 'gift' ? (it.method === 'online' ? 1 : 2) : 3; };
@@ -722,10 +753,11 @@
         : it.kind === 'food' ? onTime.slice().reverse().filter(ok)[0]
         : onTime.filter(ok)[0];
       var late = false;
-      if (i === undefined && it.kind !== 'buffer') { i = after.filter(ok)[0]; late = i !== undefined; }
+      if (i === undefined && it.kind !== 'buffer') { i = after.filter(ok)[0]; late = i !== undefined && it.kind === 'gift'; }
       if (i !== undefined) {
         it.slot = i;
         it.late = late;
+        it.close = (it.kind === 'extras' || (it.kind === 'gift' && it.method === 'shop')) && dates[i] >= closeFrom;
         put[i] = round2(put[i] + it.amount);
       }
     });
@@ -900,31 +932,31 @@
     return names.length < 2 ? names.join('') : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
   }
 
+  var CLOSE_NOTE = "Close to Christmas, so don't leave it too late.";
+
   function lateNote(it) {
-    return it.kind === 'gift' && it.method === 'online'
-      ? 'Later than ideal: the aim was to order by ' + dayLabel(it.aimBy) + '. This is your first payday with enough, so allow extra time for delivery.'
-      : 'Later than ideal: the aim was ' + dayLabel(it.aimBy) + '. This is your first payday with enough, so leave a little extra time.';
+    return 'Later than ideal: the aim was to order by ' + dayLabel(it.aimBy) + '. This is your first payday with enough, so allow extra time for delivery.';
   }
 
   function buyLines(items) {
     var lines = [], groups = {};
     items.forEach(function (it) {
       if (it.kind === 'gift') {
-        var key = it.method + (it.late ? '-late' : '');
+        var key = it.method + (it.late ? '-late' : '') + (it.close ? '-close' : '');
         (groups[key] = groups[key] || []).push(it);
         return;
       }
       var label = it.kind === 'extras' ? 'Extras' : it.kind === 'food' ? 'Food and drink' : 'Keep this as a buffer';
       var note = it.kind === 'food' ? 'Buy fresh food in the final week; drinks and long-life items can come earlier.' : '';
-      if (it.late) note = lateNote(it) + (note ? ' ' + note : '');
+      if (it.close) note = CLOSE_NOTE;
       lines.push({ label: label, amount: it.amount, note: note, order: it.kind === 'extras' ? 4 : it.kind === 'food' ? 5 : 6 });
     });
-    [['online', 0], ['online-late', 1], ['shop', 2], ['shop-late', 3]].forEach(function (k) {
+    [['online', 0], ['online-late', 1], ['shop', 2], ['shop-close', 3]].forEach(function (k) {
       var g = groups[k[0]];
       if (!g) return;
       lines.push({
         label: (g.length > 1 ? 'Gifts for ' : 'Gift for ') + namesList(g.map(function (x) { return x.name; })) + ' (' + METHOD_LABEL[g[0].method] + ')',
-        amount: round2(sum(g, function (x) { return x.amount; })), note: g[0].late ? lateNote(g[0]) : '', order: k[1]
+        amount: round2(sum(g, function (x) { return x.amount; })), note: g[0].late ? lateNote(g[0]) : g[0].close ? CLOSE_NOTE : '', order: k[1]
       });
     });
     return lines.sort(function (a, b) { return a.order - b.order; });
@@ -981,7 +1013,7 @@
       var sa = a.slot < 0 ? 1e9 : a.slot, sb = b.slot < 0 ? 1e9 : b.slot;
       return sa - sb || b.amount - a.amount;
     }).map(function (it) {
-      var when = it.slot < 0 ? 'Not covered yet' : p.paydays ? dayLabel(p.spending.slots[it.slot].date) : 'Now';
+      var when = it.slot < 0 ? 'Not covered yet' : p.paydays ? "Once you're paid on " + dayLabel(p.spending.slots[it.slot].date) : "From what you've already saved";
       return { when: when + (it.late ? ' (later than ideal)' : ''), name: it.name, how: METHOD_LABEL[it.method], amount: it.amount };
     });
   }
@@ -1036,7 +1068,7 @@
 
     var bb = buyBy(p);
     if (bb.length) {
-      h.push('<h4>Buy-by list</h4><ul class="plan-list bb-list">' + bb.map(function (x) {
+      h.push('<h4>Shopping list, in order</h4><ul class="plan-list bb-list">' + bb.map(function (x) {
         return '<li><span class="who">' + esc(x.name) + ' <span class="rel">' + esc(x.how) + '</span><span class="when">' + esc(x.when) + '</span></span><span class="amt">' + money(x.amount) + '</span></li>';
       }).join('') + '</ul>');
     }
@@ -1086,7 +1118,7 @@
     }
     var bbt = buyBy(p);
     if (bbt.length) {
-      t.push('', 'Buy-by list');
+      t.push('', 'Shopping list, in order');
       bbt.forEach(function (x) { t.push(x.when + ': ' + x.name + ', ' + x.how + ', ' + money(x.amount)); });
     }
     var b = p.planB;
